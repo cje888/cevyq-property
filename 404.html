@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Card not found</title>
+<style>body{font:16px/1.5 Jost,Arial,sans-serif;background:#faf7f1;color:#1f3d36;text-align:center;padding:60px 16px}a{color:#b8955a}</style>
+<script>
+  // Card names are lower case. If someone types /Malee, send them to /malee/.
+  var p = location.pathname, low = p.toLowerCase();
+  if (low !== p) location.replace(low + (low.slice(-1) === "/" ? "" : "/") + location.search + location.hash);
+</script>
+</head>
+<body>
+<p>This card could not be found. Please check the link.</p>
+<p><a href="https://www.cevyq.com">www.cevyq.com</a></p>
+</body>
+</html>

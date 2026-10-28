@@ -6,13 +6,13 @@
 <title>Card not found</title>
 <style>body{font:16px/1.5 Jost,Arial,sans-serif;background:#faf7f1;color:#1f3d36;text-align:center;padding:60px 16px}a{color:#b8955a}</style>
 <script>
-  // Card names are lower case. If someone types /Malee, send them to /malee/.
-  var p = location.pathname, low = p.toLowerCase();
-  if (low !== p) location.replace(low + (low.slice(-1) === "/" ? "" : "/") + location.search + location.hash);
+  // This site only holds Malee's card. Any wrong link (capital letters, a full stop
+  // or comma copied from a chat, a typo) goes straight to her card.
+  location.replace("/malee/" + location.search + location.hash);
 </script>
 </head>
 <body>
-<p>This card could not be found. Please check the link.</p>
+<p>Opening the card&hellip; <a href="/malee/">tap here</a> if it does not open.</p>
 <p><a href="https://www.cevyq.com">www.cevyq.com</a></p>
 </body>
 </html>

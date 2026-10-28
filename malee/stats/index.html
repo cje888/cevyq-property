@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Card stats | Malee Srisuk</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f3d36">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Card stats">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#faf7f1;--paper:#ffffff;--sand:#f3ede2;--line:#e6ddcd;
+    --jade:#1f3d36;--jade2:#2c5a4f;--mist:#e7efe9;
+    --gold:#b8955a;--gold2:#d8bd8a;--ink:#24302c;--soft:#66736e;--up:#2f7d5b;--down:#a65a3a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{min-height:100vh;background:var(--ivory);color:var(--ink);font:16px/1.5 Jost,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .wrap{max-width:480px;margin:0 auto;padding:max(22px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom))}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .pic{width:58px;height:58px;border-radius:50%;padding:3px;background:linear-gradient(145deg,var(--gold2),var(--gold) 60%,#8f6f3c);flex:none}
+  .pic img{width:100%;height:100%;border-radius:50%;border:2px solid #fff;object-fit:cover;display:block}
+  h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:1.8rem;line-height:1.05;color:var(--jade)}
+  .eyebrow{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 10px 30px -22px rgba(31,61,54,.45)}
+  .card+.card{margin-top:14px}
+  h2{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--soft);font-weight:600;margin-bottom:12px}
+  label{display:block;font-weight:500;margin-bottom:8px}
+  input{width:100%;font:600 1.7rem/1 Jost,Arial,sans-serif;letter-spacing:.4em;text-align:center;padding:14px 10px;border:2px solid var(--line);border-radius:14px;background:var(--ivory);color:var(--jade)}
+  input:focus{outline:none;border-color:var(--gold)}
+  .go{width:100%;margin-top:12px;padding:14px;border-radius:14px;background:var(--jade);color:#fff;font-weight:600;font-size:1.02rem}
+  .go:disabled{opacity:.6}
+  .err{color:var(--down);min-height:1.4em;margin-top:10px;font-size:.92rem}
+  .note{font-size:.84rem;color:var(--soft);margin-top:10px}
+  .tabs{display:flex;background:var(--sand);border-radius:999px;padding:4px;margin-bottom:14px}
+  .tabs button{flex:1;padding:8px;border-radius:999px;font-weight:500;color:var(--soft)}
+  .tabs button[aria-pressed="true"]{background:var(--paper);color:var(--jade);box-shadow:0 2px 8px -4px rgba(31,61,54,.4)}
+  .big{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .n{background:var(--ivory);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .n b{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-size:2.6rem;line-height:1;color:var(--jade);font-variant-numeric:tabular-nums}
+  .n span{display:block;font-size:.9rem;font-weight:500;margin-top:4px}
+  .n i{display:block;font-style:normal;font-size:.78rem;color:var(--soft);margin-top:2px}
+  .n i.up{color:var(--up)}.n i.down{color:var(--down)}
+  .n.hl{background:var(--jade);border-color:var(--jade)}
+  .n.hl b,.n.hl span{color:#fff}.n.hl i{color:var(--gold2)}
+  .list div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+  .list div:last-child{border-bottom:0}
+  .list b{font-weight:600;color:var(--jade);font-variant-numeric:tabular-nums}
+  .empty{color:var(--soft);font-size:.92rem}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;font-size:.84rem;color:var(--soft)}
+  .foot button{text-decoration:underline;text-underline-offset:2px;color:var(--jade2)}
+  .tip{margin-top:14px;background:var(--mist);border-radius:14px;padding:12px 14px;font-size:.86rem;color:var(--jade)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="head">
+    <div class="pic"><img src="../malee.jpg" alt=""></div>
+    <div><div class="eyebrow">Owner only</div><h1>Your card stats</h1></div>
+  </div>
+
+  <form class="card" id="login" hidden>
+    <label for="code">Enter your 6 digit owner code</label>
+    <input id="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+    <button class="go" id="goBtn" type="submit">See my stats</button>
+    <div class="err" id="err" role="alert"></div>
+    <p class="note">Your code was sent to you on WhatsApp by CEVYQ Group. Lost it? Message us on <a href="https://wa.me/66631101888" style="color:var(--jade2);text-decoration:underline">+66 63 110 1888</a>.</p>
+  </form>
+
+  <div id="stats" hidden>
+    <div class="tabs" role="group" aria-label="Month">
+      <button type="button" id="tNow" aria-pressed="true">This month</button>
+      <button type="button" id="tPrev" aria-pressed="false">Last month</button>
+    </div>
+    <div class="card">
+      <h2 id="mName">This month</h2>
+      <div class="big" id="big"></div>
+    </div>
+    <div class="card"><h2>Other taps</h2><div class="list" id="other"></div></div>
+    <div class="card"><h2>Where visitors came from</h2><div class="list" id="where"></div></div>
+    <div class="tip" id="tip">Tip: add this page to your home screen so your stats are one tap away. On iPhone tap Share, then Add to Home Screen. On Android tap the menu, then Add to Home screen.</div>
+    <p class="note">Robots and link checkers are left out, and so are your own visits from this phone, so these are real people. Numbers update every time you open this page.</p>
+    <div class="foot"><span id="upd"></span><button type="button" id="out">Sign out</button></div>
+  </div>
+</main>
+<script>
+(function () {
+  var API = 'https://cevyq-stats.chris-e41.workers.dev', CARD = 'property', KEY = 'cevyq_owner_' + CARD;
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  var LABEL = { call: 'Call', whatsapp: 'WhatsApp', line: 'LINE', sms: 'Text message', email: 'Email', telegram: 'Telegram', form_sent: 'Form sent', quote_sent: 'Quote request sent',
+    save_contact: 'Saved your contact', qr: 'Showed your QR code', directions: 'Directions', website: 'Website', review: 'Review on Google', facebook: 'Facebook', instagram: 'Instagram',
+    tiktok: 'TikTok', linkedin: 'LinkedIn', youtube: 'YouTube', claim: 'Claim it' };
+  var label = function (e) {
+    if (LABEL[e]) return LABEL[e];
+    var t = e.indexOf('tap_') === 0 ? e.slice(4) : e.indexOf('link_') === 0 ? e.slice(5) : e;
+    t = t.replace(/_/g, ' ');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var monthName = function (m) { return new Date(m + '-01T00:00:00Z').toLocaleString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }); };
+  var regions; try { regions = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
+  var country = function (cc) { if (!cc) return 'Unknown'; try { return regions ? regions.of(cc) : cc; } catch (e) { return cc; } };
+  var D = null, showPrev = false;
+
+  function post(path, body) {
+    return fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j._status = r.status; return j; }); });
+  }
+  function showLogin(msg) {
+    $('stats').hidden = true; $('login').hidden = false; $('err').textContent = msg || '';
+    $('code').value = ''; $('code').focus();
+  }
+  function load() {
+    var t = store.get(KEY);
+    if (!t) return showLogin();
+    post('/owner/stats', { c: CARD, t: t }).then(function (j) {
+      if (j._status === 401) { store.del(KEY); return showLogin('Please enter your code again.'); }
+      if (j._status !== 200) return showLogin(j.error || 'Could not load your stats. Please try again.');
+      D = j; draw();
+    }).catch(function () { showLogin('No connection. Please try again.'); });
+  }
+  function draw() {
+    var m = showPrev ? D.prev : D.month, o = D[m], b = showPrev ? null : D[D.prev];
+    $('tNow').setAttribute('aria-pressed', !showPrev); $('tPrev').setAttribute('aria-pressed', showPrev);
+    $('mName').textContent = monthName(m) + (showPrev ? '' : ' so far');
+    var n = function (x, k) { return (x.ev[k] || 0); };
+    var vs = function (k, people) {
+      if (!b) return '';
+      var a = people ? o.people : n(o, k), c = people ? b.people : n(b, k);
+      if (a > c) return '<i class="up">Up from ' + c + ' last month</i>';
+      if (a < c) return '<i class="down">Down from ' + c + ' last month</i>';
+      return '<i>Same as last month</i>';
+    };
+    var box = function (v, t, k, people, hl) { return '<div class="n' + (hl ? ' hl' : '') + '"><b>' + v + '</b><span>' + t + '</span>' + vs(k, people) + '</div>'; };
+    $('big').innerHTML = box(n(o, 'open'), 'Card opens', 'open', false, true) + box(o.people, 'Different people', '', true) +
+      box(n(o, 'whatsapp'), 'WhatsApp taps', 'whatsapp') + box(n(o, 'call'), 'Calls', 'call');
+    var other = Object.keys(o.ev).filter(function (k) { return k !== 'open' && k !== 'whatsapp' && k !== 'call'; })
+      .sort(function (x, y) { return o.ev[y] - o.ev[x]; });
+    $('other').innerHTML = other.length ? other.map(function (k) { return '<div><span>' + esc(label(k)) + '</span><b>' + o.ev[k] + '</b></div>'; }).join('')
+      : '<p class="empty">No other taps yet.</p>';
+    var cs = Object.keys(o.countries).sort(function (x, y) { return o.countries[y] - o.countries[x]; });
+    $('where').innerHTML = cs.length ? cs.slice(0, 8).map(function (k) { return '<div><span>' + esc(country(k)) + '</span><b>' + o.countries[k] + '</b></div>'; }).join('')
+      : '<p class="empty">No visitors yet.</p>';
+    $('upd').textContent = 'Updated ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    $('login').hidden = true; $('stats').hidden = false;
+  }
+  $('login').onsubmit = function (e) {
+    e.preventDefault();
+    var code = $('code').value.replace(/\D/g, '');
+    if (code.length !== 6) { $('err').textContent = 'Please enter all 6 numbers.'; return; }
+    $('goBtn').disabled = true; $('err').textContent = '';
+    post('/owner/login', { c: CARD, code: code }).then(function (j) {
+      $('goBtn').disabled = false;
+      if (j.token) {
+        store.set(KEY, j.token);
+        // The owner's own looks at their card from this phone are not counted as visitors.
+        store.set('cevyq_me', '1');
+        return load();
+      }
+      $('err').textContent = (j.error || 'Something went wrong.') + (j.left ? ' ' + j.left + ' tr' + (j.left === 1 ? 'y' : 'ies') + ' left.' : '');
+      $('code').value = '';
+    }).catch(function () { $('goBtn').disabled = false; $('err').textContent = 'No connection. Please try again.'; });
+  };
+  $('tNow').onclick = function () { showPrev = false; draw(); };
+  $('tPrev').onclick = function () { showPrev = true; draw(); };
+  $('out').onclick = function () { store.del(KEY); D = null; showLogin(); };
+  if (window.matchMedia && matchMedia('(display-mode: standalone)').matches || navigator.standalone) $('tip').hidden = true;
+  load();
+})();
+</script>
+</body>
+</html>

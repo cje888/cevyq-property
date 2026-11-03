@@ -23,6 +23,14 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 svg{flex:none}
 [hidden]{display:none!important}
+.pvbar{position:fixed;z-index:35;left:0;right:0;top:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px calc(8px);padding-top:max(8px,env(safe-area-inset-top));background:#111;color:#fff;font:700 .78rem/1.3 Arial,sans-serif;letter-spacing:.03em;text-align:center}
+.pvbar a{background:#f28a2c;color:#fff;padding:5px 10px;border-radius:99px;white-space:nowrap}
+body.pv .topbar{top:34px}
+.pvlock{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,10,10,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.pvlock .bx{max-width:380px;background:#fff;color:#111;border-radius:24px;padding:28px 22px;text-align:center;font-family:Arial,sans-serif}
+.pvlock h3{font-size:1.35rem;margin-bottom:8px}
+.pvlock p{font-size:.92rem;color:#444;line-height:1.5}
+.pvlock a{display:block;margin-top:16px;padding:14px;border-radius:14px;background:#1faa59;color:#fff;font-weight:700}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px 120px;position:relative;z-index:0}
 /* full width colour bands, so the whole page carries the brand */
 .band{position:relative;margin-top:0!important;padding:46px 0 50px}
@@ -118,6 +126,19 @@ h2{font-family:var(--head);font-weight:var(--headw);font-size:2rem;color:var(--i
 .count button svg{width:16px;height:16px;color:#e5484d}
 
 .list{display:grid;gap:18px;margin-top:12px}
+#list{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:12px -16px 0;padding:4px 16px 10px;scrollbar-width:none}
+#list::-webkit-scrollbar{display:none}
+#list .home{flex:0 0 84%;scroll-snap-align:center}
+#list .none{flex:1}
+.moreTile{display:flex!important;align-items:center;justify-content:center;text-align:center;background:var(--grad)!important;color:var(--onA);border:0!important;min-height:300px;flex:0 0 60%!important}
+.moreTile b{display:block;font-family:var(--head);font-size:3rem;line-height:1}
+.moreTile span{font-weight:800;font-size:1rem}
+.seeall{display:grid;gap:10px;margin-top:16px}
+.det.allS{z-index:40}.det .ovr .pr{color:#fff;font-size:1.75rem;margin-top:0}.det .ovr .pr small{color:#fff}.allS .box{padding-bottom:30px}
+.allh{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--bg);border-bottom:1px solid var(--line);margin-bottom:14px;color:var(--ink)}
+.allh b{font-family:var(--head);font-size:1.4rem}
+.allh .x{position:static}
+.allS #allList .home{background:var(--paper)}
 .home{position:relative;display:block;width:100%;text-align:left;cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:24px;overflow:hidden;transition:box-shadow .25s,transform .25s}
 .home:hover{box-shadow:0 22px 44px -26px rgba(0,0,0,.5);transform:translateY(-2px)}
 .home .ph{display:block;position:relative;aspect-ratio:4/3;background:var(--sand);overflow:hidden}
@@ -147,7 +168,7 @@ h2{font-family:var(--head);font-weight:var(--headw);font-size:2rem;color:var(--i
 .none a{color:var(--ink);font-weight:700;text-decoration:underline}
 
 /* detail */
-.det{position:fixed;inset:0;z-index:40;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
+.det{position:fixed;inset:0;z-index:41;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
 .det.on{display:flex}
 .det .box{position:relative;width:100%;max-width:560px;max-height:94vh;overflow-y:auto;background:var(--bg);border-radius:28px 28px 0 0;padding-bottom:max(22px,env(safe-area-inset-bottom));animation:up .32s cubic-bezier(.2,.8,.2,1)}
 @keyframes up{from{transform:translateY(50px);opacity:0}}
@@ -359,6 +380,10 @@ footer a{text-decoration:underline;text-underline-offset:2px}
     <div class="areas" id="areas"></div>
     <div class="count"><span id="count"></span><button id="shortBtn" hidden data-t="tap_shortlist"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21l-1.4-1.3C5.4 15 2 12 2 8.4 2 5.4 4.4 3 7.4 3c1.7 0 3.4.8 4.6 2.1C13.2 3.8 14.9 3 16.6 3 19.6 3 22 5.4 22 8.4c0 3.6-3.4 6.6-8.6 11.3z"/></svg><span id="shortN"></span></button></div>
     <div class="list" id="list"></div>
+    <div class="seeall" id="seeAll">
+      <a class="big solid" href="#" id="seeAllBtn" data-t="tap_see_all_homes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>See all my properties (<span id="seeAllN"></span>)</span></a>
+      <a class="big ghost" id="allExt2" hidden target="_blank" rel="noopener" data-t="tap_all_listings_site">All my listings online ›</a>
+    </div>
   </section>
 
   <section id="calc" class="rv band dk">
@@ -472,13 +497,18 @@ footer a{text-decoration:underline;text-underline-offset:2px}
     <div class="in" id="detBody"></div>
   </div>
 </div>
+<div class="det allS" id="allS" role="dialog" aria-modal="true" aria-label="All properties">
+  <div class="box"><div class="allh"><b id="allT"></b><button class="x" id="allX" aria-label="Close" data-no-track><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="list" id="allList" style="padding:0 16px"></div>
+    <p style="text-align:center;padding:18px 16px 4px"><a id="allExt" hidden target="_blank" rel="noopener" style="color:var(--a);font-weight:700;text-decoration:underline">See every listing on my agency website ›</a></p></div>
+</div>
 <div class="sheet" id="sheet" role="dialog" aria-label="QR code">
   <div class="box"><h3>Scan to open my card</h3><img id="qrImg" alt="QR code for this card"><button id="closeQr" data-no-track>Close</button></div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-var C = {"slug": "aus", "name": "Liam Carter", "first": "Liam", "role": "Sales Agent · Lower North Shore", "where": "Mosman · Manly · Balmain", "mark": "H", "agency": "Harbourline Real Estate", "city": "Sydney", "intro": "Harbour homes, family houses and apartments. I run clean campaigns, give straight price guides and work hard on auction day.", "stats": [[226, "homes sold", "", ""], [96, "auction clearance", "", "%"], [24, "avg days on market", "", ""]], "rating": "4.9", "reviewsN": "211", "chips": ["Licensed in NSW", "Auction specialist", "Off market buyers"], "licCo": "Harbourline Real Estate Pty Ltd", "licA": "NSW Class 2 Agent Licence 20471836", "licB": "ABN 48 612 334 905 · Member, REINSW", "ticker": [["SOLD AT AUCTION", "Mosman family home", "$4.31M, 9 bidders"], ["SOLD", "Manly beach house", "$180K above reserve"], ["SOLD PRIOR", "Balmain terrace", "in 6 days"], ["JUST LISTED", "Palm Beach retreat", "open Saturday 10:30"], ["LEASED", "Neutral Bay apartment", "first open"]], "cur": "$", "sep": ",", "rentPer": "/ week", "rentPerWord": "a week", "loc": "AU", "tz": "Australia/Sydney", "tzName": "Sydney time", "hours": [8, 19], "areas": ["Mosman", "Manly", "Balmain", "Palm Beach", "Castle Hill"], "homes": [{"id": "MO-5101", "m": "buy", "area": "Mosman", "title": "Contemporary family home near the harbour", "loc": "Mosman, NSW 2088", "price": 4200000, "guide": "Guide", "beds": 5, "baths": 3, "cars": 2, "size": "665 m² land", "flag": "Auction 23 Nov", "hot": 1, "views": 31, "img": ["p1.jpg", "p2.jpg"], "desc": "Architect designed home on a level block in a quiet street, a short stroll to Balmoral Beach and the Mosman village shops.", "feat": ["Level 665 m² block", "Heated pool", "Balmoral Beach walk", "Solar and battery"]}, {"id": "MY-5102", "m": "buy", "area": "Manly", "title": "Beach house with ocean glimpses", "loc": "Manly, NSW 2095", "price": 3350000, "beds": 4, "baths": 3, "cars": 2, "size": "420 m² land", "flag": "New listing", "hot": 1, "views": 17, "img": ["p3.jpg", "p4.jpg"], "desc": "Light filled home with a big rear deck, outdoor shower and room for the boards. Walk to the Corso and the ferry.", "feat": ["Walk to the ferry", "Big rear deck", "Ducted air", "Double garage"]}, {"id": "BM-5103", "m": "buy", "area": "Balmain", "title": "Modern home behind a heritage facade", "loc": "Balmain, NSW 2041", "price": 2850000, "beds": 3, "baths": 2, "cars": 1, "size": "240 m² land", "flag": "Open Sat 10:30", "img": ["p5.jpg", "p6.jpg"], "desc": "Dark timber, high ceilings and a north facing courtyard, a few minutes from Darling Street cafes and the ferry to the city.", "feat": ["North facing courtyard", "Off street parking", "Ferry to the CBD", "Heritage charm"]}, {"id": "CH-5104", "m": "buy", "area": "Castle Hill", "title": "Family home in a top school zone", "loc": "Castle Hill, NSW 2154", "price": 1890000, "beds": 4, "baths": 2, "cars": 2, "size": "700 m² land", "flag": "Price guide", "guide": "Guide", "img": ["p7.jpg", "p8.jpg"], "desc": "Spacious single level home with a renovated kitchen and big backyard, in the catchment for sought after local schools.", "feat": ["Top school zone", "Renovated kitchen", "Big backyard", "Near the Metro"]}, {"id": "PB-5105", "m": "buy", "area": "Palm Beach", "title": "Weekender with pool and Pittwater views", "loc": "Palm Beach, NSW 2108", "price": 5600000, "beds": 4, "baths": 3, "cars": 2, "size": "900 m² land", "flag": "Expressions of interest", "img": ["p9.jpg", "p10.jpg"], "desc": "Light filled retreat with resort style pool, wide decks and views across Pittwater. Short walk to Palm Beach and Station Beach.", "feat": ["Pittwater views", "Resort style pool", "Walk to two beaches", "Holiday letting ready"]}, {"id": "NB-R301", "m": "rent", "area": "Mosman", "title": "2 bed apartment with harbour glimpses", "loc": "Neutral Bay, NSW 2089", "price": 950, "beds": 2, "baths": 1, "cars": 1, "size": "86 m²", "flag": "Available now", "hot": 1, "views": 24, "img": ["p11.jpg", "p12.jpg"], "desc": "Quiet top floor apartment with a sunny balcony, close to Military Road shops and city buses.", "feat": ["Sunny balcony", "Secure parking", "Internal laundry", "Pets on request"]}, {"id": "MY-R302", "m": "rent", "area": "Manly", "title": "Beachside apartment, walk to the sand", "loc": "Manly, NSW 2095", "price": 1150, "beds": 2, "baths": 2, "cars": 1, "size": "94 m²", "flag": "Furnished option", "img": ["p13.jpg", "p14.jpg"], "desc": "Renovated apartment one street back from North Steyne, with ocean breezes and a lock up garage for the bikes.", "feat": ["One street to the beach", "Renovated bathrooms", "Lock up garage", "Furnished option"]}, {"id": "BM-R303", "m": "rent", "area": "Balmain", "title": "Modern townhouse with courtyard", "loc": "Balmain, NSW 2041", "price": 1650, "beds": 3, "baths": 2, "cars": 1, "size": "160 m²", "flag": "Open Thu 5:30 pm", "img": ["p15.jpg", "p16.jpg"], "desc": "Three level townhouse with a private courtyard, close to schools, parks and the ferry.", "feat": ["Private courtyard", "Near schools", "Ferry to the CBD", "Ducted air"]}], "times": ["9:30 am", "11:00 am", "12:30 pm", "3:00 pm", "5:30 pm"], "viewNote": "Opens every Saturday, private inspections any day.", "moveIn": 6, "moveInTxt": "Four weeks bond plus two weeks rent in advance", "calc": {"eye": "Home loan calculator", "title": "What will my repayments be?", "sub": "Slide to see your monthly home loan repayment.", "price": 1900000, "min": 500000, "max": 8000000, "step": 50000, "dep": 20, "rate": 6.0, "term": 30, "n": 12, "per": "a month", "depLabel": "Deposit", "cta": "Talk to a mortgage broker", "ctaMsg": "Can you put me in touch with a good mortgage broker?", "note": "Estimate only, principal and interest. Stamp duty and fees are extra. Your lender confirms the real numbers."}, "types": ["House", "Apartment", "Townhouse", "Terrace"], "budgetBuy": ["Under $1M", "$1M to $2M", "$2M to $3.5M", "$3.5M to $6M", "Over $6M"], "budgetRent": ["Under $700 a week", "$700 to $1,000 a week", "$1,000 to $1,500 a week", "Over $1,500 a week"], "addrHint": "e.g. 12 Raglan Street, Mosman", "telHint": "0412 345 678", "consent": "I agree that Harbourline Real Estate may use my details to reply to this enquiry, in line with the Privacy Act 1988.", "route": "Goes straight to Liam and the office, so no enquiry slips through", "sold": [["p1.jpg", "$4.31M", "Mosman · auction"], ["p3.jpg", "$3.18M", "Manly · 9 days"], ["p5.jpg", "$2.74M", "Balmain · prior"]], "whyH": "Selling with Liam", "why": [["A straight price guide", "A free appraisal built on real recent sales, so your campaign starts with the right buyers."], ["A campaign that stands out", "Pro photos, video, floor plans and a premiere listing on realestate.com.au and Domain."], ["Feedback every week", "Every enquiry and every open reported back to you, with honest buyer feedback."], ["Strong on auction day", "Hundreds of auctions run, and I know how to bring every bidder to their best."]], "reviews": [["Liam ran a flawless campaign and the auction went well past our reserve. We could not be happier.", "Emma and Josh, Mosman"], ["Straight talking and always available. He found us a place in Manly before it hit the portals.", "Daniel T., Manly"], ["Honest price guide, great feedback after every open and a sale in under a month.", "Margaret L., Balmain"]], "info": [["Office", "Shop 3, 790 Military Road, Mosman NSW"], ["Inspections", "Opens Saturdays · private viewings any day"]], "wa": "66631101888", "tel": "+66631101888", "email": "chris@cevyq.com", "shareText": "Homes to buy or rent in Sydney"};
+var C = {"slug": "aus", "cardid": "property-aus", "name": "Liam Carter", "first": "Liam", "role": "Sales Agent · Lower North Shore", "where": "Mosman · Manly · Balmain", "mark": "H", "agency": "Harbourline Real Estate", "city": "Sydney", "intro": "Harbour homes, family houses and apartments. I run clean campaigns, give straight price guides and work hard on auction day.", "stats": [[226, "homes sold", "", ""], [96, "auction clearance", "", "%"], [24, "avg days on market", "", ""]], "rating": "4.9", "reviewsN": "211", "chips": ["Licensed in NSW", "Auction specialist", "Off market buyers"], "licCo": "Harbourline Real Estate Pty Ltd", "licA": "NSW Class 2 Agent Licence 20471836", "licB": "ABN 48 612 334 905 · Member, REINSW", "ticker": [["SOLD AT AUCTION", "Mosman family home", "$4.31M, 9 bidders"], ["SOLD", "Manly beach house", "$180K above reserve"], ["SOLD PRIOR", "Balmain terrace", "in 6 days"], ["JUST LISTED", "Palm Beach retreat", "open Saturday 10:30"], ["LEASED", "Neutral Bay apartment", "first open"]], "cur": "$", "sep": ",", "rentPer": "/ week", "rentPerWord": "a week", "loc": "AU", "tz": "Australia/Sydney", "tzName": "Sydney time", "hours": [8, 19], "areas": ["Mosman", "Manly", "Balmain", "Palm Beach", "Castle Hill"], "homes": [{"id": "MO-5101", "m": "buy", "area": "Mosman", "title": "Contemporary family home near the harbour", "loc": "Mosman, NSW 2088", "price": 4200000, "guide": "Guide", "beds": 5, "baths": 3, "cars": 2, "size": "665 m² land", "flag": "Auction 23 Nov", "hot": 1, "views": 31, "img": ["p1.jpg", "p2.jpg"], "desc": "Architect designed home on a level block in a quiet street, a short stroll to Balmoral Beach and the Mosman village shops.", "feat": ["Level 665 m² block", "Heated pool", "Balmoral Beach walk", "Solar and battery"]}, {"id": "MY-5102", "m": "buy", "area": "Manly", "title": "Beach house with ocean glimpses", "loc": "Manly, NSW 2095", "price": 3350000, "beds": 4, "baths": 3, "cars": 2, "size": "420 m² land", "flag": "New listing", "hot": 1, "views": 17, "img": ["p3.jpg", "p4.jpg"], "desc": "Light filled home with a big rear deck, outdoor shower and room for the boards. Walk to the Corso and the ferry.", "feat": ["Walk to the ferry", "Big rear deck", "Ducted air", "Double garage"]}, {"id": "BM-5103", "m": "buy", "area": "Balmain", "title": "Modern home behind a heritage facade", "loc": "Balmain, NSW 2041", "price": 2850000, "beds": 3, "baths": 2, "cars": 1, "size": "240 m² land", "flag": "Open Sat 10:30", "img": ["p5.jpg", "p6.jpg"], "desc": "Dark timber, high ceilings and a north facing courtyard, a few minutes from Darling Street cafes and the ferry to the city.", "feat": ["North facing courtyard", "Off street parking", "Ferry to the CBD", "Heritage charm"]}, {"id": "CH-5104", "m": "buy", "area": "Castle Hill", "title": "Family home in a top school zone", "loc": "Castle Hill, NSW 2154", "price": 1890000, "beds": 4, "baths": 2, "cars": 2, "size": "700 m² land", "flag": "Price guide", "guide": "Guide", "img": ["p7.jpg", "p8.jpg"], "desc": "Spacious single level home with a renovated kitchen and big backyard, in the catchment for sought after local schools.", "feat": ["Top school zone", "Renovated kitchen", "Big backyard", "Near the Metro"]}, {"id": "PB-5105", "m": "buy", "area": "Palm Beach", "title": "Weekender with pool and Pittwater views", "loc": "Palm Beach, NSW 2108", "price": 5600000, "beds": 4, "baths": 3, "cars": 2, "size": "900 m² land", "flag": "Expressions of interest", "img": ["p9.jpg", "p10.jpg"], "desc": "Light filled retreat with resort style pool, wide decks and views across Pittwater. Short walk to Palm Beach and Station Beach.", "feat": ["Pittwater views", "Resort style pool", "Walk to two beaches", "Holiday letting ready"]}, {"id": "NB-R301", "m": "rent", "area": "Mosman", "title": "2 bed apartment with harbour glimpses", "loc": "Neutral Bay, NSW 2089", "price": 950, "beds": 2, "baths": 1, "cars": 1, "size": "86 m²", "flag": "Available now", "hot": 1, "views": 24, "img": ["p11.jpg", "p12.jpg"], "desc": "Quiet top floor apartment with a sunny balcony, close to Military Road shops and city buses.", "feat": ["Sunny balcony", "Secure parking", "Internal laundry", "Pets on request"]}, {"id": "MY-R302", "m": "rent", "area": "Manly", "title": "Beachside apartment, walk to the sand", "loc": "Manly, NSW 2095", "price": 1150, "beds": 2, "baths": 2, "cars": 1, "size": "94 m²", "flag": "Furnished option", "img": ["p13.jpg", "p14.jpg"], "desc": "Renovated apartment one street back from North Steyne, with ocean breezes and a lock up garage for the bikes.", "feat": ["One street to the beach", "Renovated bathrooms", "Lock up garage", "Furnished option"]}, {"id": "BM-R303", "m": "rent", "area": "Balmain", "title": "Modern townhouse with courtyard", "loc": "Balmain, NSW 2041", "price": 1650, "beds": 3, "baths": 2, "cars": 1, "size": "160 m²", "flag": "Open Thu 5:30 pm", "img": ["p15.jpg", "p16.jpg"], "desc": "Three level townhouse with a private courtyard, close to schools, parks and the ferry.", "feat": ["Private courtyard", "Near schools", "Ferry to the CBD", "Ducted air"]}], "times": ["9:30 am", "11:00 am", "12:30 pm", "3:00 pm", "5:30 pm"], "viewNote": "Opens every Saturday, private inspections any day.", "moveIn": 6, "moveInTxt": "Four weeks bond plus two weeks rent in advance", "calc": {"eye": "Home loan calculator", "title": "What will my repayments be?", "sub": "Slide to see your monthly home loan repayment.", "price": 1900000, "min": 500000, "max": 8000000, "step": 50000, "dep": 20, "rate": 6.0, "term": 30, "n": 12, "per": "a month", "depLabel": "Deposit", "cta": "Talk to a mortgage broker", "ctaMsg": "Can you put me in touch with a good mortgage broker?", "note": "Estimate only, principal and interest. Stamp duty and fees are extra. Your lender confirms the real numbers."}, "types": ["House", "Apartment", "Townhouse", "Terrace"], "budgetBuy": ["Under $1M", "$1M to $2M", "$2M to $3.5M", "$3.5M to $6M", "Over $6M"], "budgetRent": ["Under $700 a week", "$700 to $1,000 a week", "$1,000 to $1,500 a week", "Over $1,500 a week"], "addrHint": "e.g. 12 Raglan Street, Mosman", "telHint": "0412 345 678", "consent": "I agree that Harbourline Real Estate may use my details to reply to this enquiry, in line with the Privacy Act 1988.", "route": "Goes straight to Liam and the office, so no enquiry slips through", "sold": [["p1.jpg", "$4.31M", "Mosman · auction"], ["p3.jpg", "$3.18M", "Manly · 9 days"], ["p5.jpg", "$2.74M", "Balmain · prior"]], "whyH": "Selling with Liam", "why": [["A straight price guide", "A free appraisal built on real recent sales, so your campaign starts with the right buyers."], ["A campaign that stands out", "Pro photos, video, floor plans and a premiere listing on realestate.com.au and Domain."], ["Feedback every week", "Every enquiry and every open reported back to you, with honest buyer feedback."], ["Strong on auction day", "Hundreds of auctions run, and I know how to bring every bidder to their best."]], "reviews": [["Liam ran a flawless campaign and the auction went well past our reserve. We could not be happier.", "Emma and Josh, Mosman"], ["Straight talking and always available. He found us a place in Manly before it hit the portals.", "Daniel T., Manly"], ["Honest price guide, great feedback after every open and a sale in under a month.", "Margaret L., Balmain"]], "info": [["Office", "Shop 3, 790 Military Road, Mosman NSW"], ["Inspections", "Opens Saturdays · private viewings any day"]], "wa": "66631101888", "tel": "+66631101888", "email": "chris@cevyq.com", "shareText": "Homes to buy or rent in Sydney", "claimWa": "https://wa.me/66631101888?text=Hi%20Chris%2C%20I%20saw%20the%20real%20estate%20agent%20demo%20card%20and%20would%20like%20one%20like%20it.", "claimPrice": "From A$125"};
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var ico = {
@@ -571,27 +601,49 @@ var C = {"slug": "aus", "name": "Liam Carter", "first": "Liam", "role": "Sales A
     var hs = C.homes.filter(function(h){ return h.m === mode && (area === "All" || h.area === area); });
     $("count").textContent = hs.length + (hs.length === 1 ? " home " : " homes ") + (mode === "buy" ? "for sale" : "for rent") + (area === "All" ? "" : " in " + area);
     favCount();
-    if (!hs.length){ list.innerHTML = '<div class="none">Nothing listed here right now, but I hear about homes before they go online. <a href="#contact">Tell me what you need</a></div>'; return; }
-    list.innerHTML = hs.map(function(h){
-      return '<div class="home" role="button" tabindex="0" data-id="' + h.id + '" data-t="tap_listing_' + h.id.toLowerCase().replace(/[^a-z0-9]/g,"") + '"><div class="ph"><img loading="lazy" src="img/' + h.img[0] + '" alt="' + esc(h.title) + '" width="1200" height="900">' +
+    if (!hs.length){ list.innerHTML = '<div class="none">Nothing listed here right now, but I hear about homes before they go online. <a href="#contact">Tell me what you need</a></div>'; $("seeAll").hidden = true; return; }
+    // Only the first few homes swipe sideways here. The rest open in the "See all" sheet.
+    var show = hs.slice(0, 4);
+    list.innerHTML = show.map(homeHtml).join("") + (hs.length > 4 ? '<button class="home moreTile" data-all="1" data-t="tap_see_all_homes"><span><b>' + hs.length + '</b>See all my properties ›</span></button>' : '');
+    $("seeAll").hidden = false; $("seeAllN").textContent = hs.length;
+    bindHomes(list);
+  }
+  function homeHtml(h){
+    return '<div class="home" role="button" tabindex="0" data-id="' + h.id + '" data-t="tap_listing_' + h.id.toLowerCase().replace(/[^a-z0-9]/g,"") + '"><div class="ph"><img loading="lazy" src="img/' + h.img[0] + '" alt="' + esc(h.title) + '" width="1200" height="900">' +
         '<span class="tag' + (h.hot ? " hot" : "") + '">' + esc(h.flag) + '</span>' +
         '<button class="fav' + (fav[h.id] ? " on" : "") + '" data-fav="' + h.id + '" aria-label="Save this home" data-t="tap_save_home">' + ico.heart + '</button>' +
         '<div class="ovr"><div class="pr">' + priceHtml(h) + '</div>' + (h.views ? '<span class="np">' + h.views + ' viewing this week</span>' : '') + '</div></div>' +
         '<div class="bd"><h3>' + esc(h.title) + '</h3><div class="loc">' + ico.pin + esc(h.loc) + '</div>' +
         '<div class="spec">' + specs(h) + '<span class="more">View ›</span></div></div></div>';
-    }).join("");
-    list.querySelectorAll(".home").forEach(function(b){
+  }
+  function bindHomes(root){
+    root.querySelectorAll(".home").forEach(function(b){
+      if (b.getAttribute("data-all")){ b.addEventListener("click", openAll); return; }
       b.addEventListener("click", function(e){ if (e.target.closest(".fav")) return; openHome(b.getAttribute("data-id")); });
       b.addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); openHome(b.getAttribute("data-id")); } });
     });
-    list.querySelectorAll(".fav").forEach(function(f){
+    root.querySelectorAll(".fav").forEach(function(f){
       f.addEventListener("click", function(e){
-        e.stopPropagation(); var id = f.getAttribute("data-fav"); fav[id] = !fav[id]; f.classList.toggle("on", !!fav[id]);
+        e.stopPropagation(); var id = f.getAttribute("data-fav"); fav[id] = !fav[id];
+        document.querySelectorAll('[data-fav="' + id + '"]').forEach(function(x){ x.classList.toggle("on", !!fav[id]); });
         try { localStorage.setItem("cq_fav_" + C.slug, JSON.stringify(fav)); } catch(x){}
         favCount(); say(fav[id] ? "Saved to your shortlist" : "Removed from your shortlist");
       });
     });
   }
+  var allS = $("allS");
+  function openAll(){
+    var hs = C.homes.filter(function(h){ return h.m === mode && (area === "All" || h.area === area); });
+    $("allT").textContent = hs.length + (hs.length === 1 ? " home " : " homes ") + (mode === "buy" ? "for sale" : "for rent") + (area === "All" ? "" : " in " + area);
+    $("allList").innerHTML = hs.map(homeHtml).join("");
+    bindHomes($("allList"));
+    allS.classList.add("on"); document.body.classList.add("lock"); allS.querySelector(".box").scrollTop = 0;
+  }
+  function closeAll(){ allS.classList.remove("on"); if (!det.classList.contains("on")) document.body.classList.remove("lock"); }
+  $("allX").addEventListener("click", closeAll);
+  allS.addEventListener("click", function(e){ if (e.target === allS) closeAll(); });
+  $("seeAllBtn").addEventListener("click", function(e){ e.preventDefault(); openAll(); });
+  if (C.allUrl){ $("allExt").href = C.allUrl; $("allExt").hidden = false; $("allExt2").href = C.allUrl; $("allExt2").hidden = false; }
   seg.querySelectorAll("button").forEach(function(b){ b.addEventListener("click", function(){ mode = b.getAttribute("data-m"); render(); }); });
   document.querySelectorAll("#areas button").forEach(function(b){ b.addEventListener("click", function(){ area = b.getAttribute("data-a"); render(); }); });
   $("shortBtn").addEventListener("click", function(){
@@ -641,13 +693,13 @@ var C = {"slug": "aus", "name": "Liam Carter", "first": "Liam", "role": "Sales A
     det.classList.add("on"); document.body.classList.add("lock"); det.querySelector(".box").scrollTop = 0;
     try { history.replaceState(null, "", "#home=" + h.id); } catch(x){}
   }
-  function closeHome(){ det.classList.remove("on"); document.body.classList.remove("lock"); if (/^#home=/.test(location.hash)) try { history.replaceState(null, "", location.pathname + location.search); } catch(x){} }
+  function closeHome(){ det.classList.remove("on"); if (!allS.classList.contains("on")) document.body.classList.remove("lock"); if (/^#home=/.test(location.hash)) try { history.replaceState(null, "", location.pathname + location.search); } catch(x){} }
   // A shared property link (card#home=REF) opens that home straight away.
   function fromHash(){ var m = location.hash.match(/^#home=([\w-]+)/); if (!m) return; var h = C.homes.filter(function(x){ return x.id.toLowerCase() === m[1].toLowerCase(); })[0]; if (h){ mode = h.m; render(); openHome(h.id); } }
   addEventListener("hashchange", fromHash);
   $("detX").addEventListener("click", closeHome);
   det.addEventListener("click", function(e){ if (e.target === det) closeHome(); });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape"){ closeHome(); sheet.classList.remove("on"); } });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape"){ if (det.classList.contains("on")) closeHome(); else closeAll(); sheet.classList.remove("on"); } });
   gal.addEventListener("scroll", function(){ $("gcount").textContent = (Math.round(gal.scrollLeft / gal.clientWidth) + 1) + " / " + gal.children.length; }, {passive:true});
   document.querySelector('.dock .b').addEventListener("click", function(){ mode = "buy"; render(); });
 
@@ -741,6 +793,24 @@ var C = {"slug": "aus", "name": "Liam Carter", "first": "Liam", "role": "Sales A
 
   render();
   fromHash();
+
+  // Preview cards: a ribbon on top until the card is paid, and a lock once the preview time runs out.
+  // Chris marks the card Paid in Card Desk and both go away. Nothing changes on demo cards.
+  if (C.preview){
+    var bar = document.createElement("div"); bar.className = "pvbar"; bar.id = "pvbar";
+    bar.innerHTML = '<span>Preview card by CEVYQ · not active yet</span><a href="' + C.claimWa + '" target="_blank" rel="noopener" data-t="claim">Activate</a>';
+    document.body.appendChild(bar); document.body.classList.add("pv");
+    var base = (document.querySelector('script[src*="/t.js"]') || {}).src || "";
+    base = base.replace(/\/t\.js.*$/, "");
+    if (base) fetch(base + "/prop/state?c=" + encodeURIComponent(C.cardid)).then(function(r){ return r.json(); }).then(function(j){
+      if (j.paid){ bar.remove(); document.body.classList.remove("pv"); var cl = document.querySelector(".claim"); if (cl) cl.remove(); return; }
+      if (j.days >= (C.previewDays || 7)){
+        var lk = document.createElement("div"); lk.className = "pvlock";
+        lk.innerHTML = '<div class="bx"><h3>This preview has ended</h3><p>' + esc(C.first) + ', your card is built and ready to go live. Activate it ' + esc(C.claimPrice) + ', one payment, no monthly fees.</p><a href="' + C.claimWa + '" target="_blank" rel="noopener" data-t="claim">Activate my card on WhatsApp</a></div>';
+        document.body.appendChild(lk); document.body.classList.add("lock");
+      }
+    }).catch(function(){});
+  }
 })();
 </script>
 <script src="https://cevyq-stats.chris-e41.workers.dev/t.js" data-card="property-aus" data-name="Australia real estate demo (Liam Carter)" data-agency="" data-person="Liam Carter" data-agent="" defer></script>

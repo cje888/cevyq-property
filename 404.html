@@ -3,12 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Card not found</title>
-<style>body{font:16px/1.5 Jost,Arial,sans-serif;background:#faf7f1;color:#1f3d36;text-align:center;padding:60px 16px}a{color:#b8955a}</style>
+<title>Opening card</title>
+<style>body{font:16px/1.5 Arial,sans-serif;background:#f3f6fb;color:#0d1628;text-align:center;padding:60px 16px}a{color:#2f7be0}</style>
 <script>
-  // This site only holds Malee's card. Any wrong link (capital letters, a full stop
-  // or comma copied from a chat, a typo) goes straight to her card.
-  location.replace("/malee/" + location.search + location.hash);
+  // Any wrong link (capital letters like /USA, a full stop or comma copied from a chat, a typo)
+  // goes to the right card. Unknown links go to Malee's card.
+  (function(){
+    var known = {usa:"usa", us:"usa", america:"usa", sa:"sa", za:"sa", southafrica:"sa", aus:"aus", au:"aus", australia:"aus", dashboard:"dashboard", malee:"malee"};
+    var first = (location.pathname.split("/")[1] || "").toLowerCase().replace(/[^a-z]/g, "");
+    var to = known[first] || "malee";
+    var rest = to === "dashboard" ? location.pathname.split("/").slice(2).join("/") : "";
+    location.replace("/" + to + "/" + (rest && /^[\w.-]+$/.test(rest) ? rest : "") + location.search + location.hash);
+  })();
 </script>
 </head>
 <body>

@@ -979,7 +979,7 @@ function updAlert(){
 $("alertBtn").onclick = function(){ feedF = pend.enq ? "leads" : pend.call ? "call" : "all"; go("live"); };
 function markSeen(){ seen = Date.now(); if (REAL) store.set("cqp_seen_" + REAL, String(seen)); pend = {open:0, enq:0, call:0}; updAlert(); }
 // Sample events are generated only by the explicit presenter shortcuts.
-setInterval(function(){ if (PAGE === "overview"){ drawRank(); } }, 60000);
+setInterval(function(){ if (G && AG && EV && LD && PAGE === "overview"){ drawRank(); } }, 60000);
 
 /* toasts */
 function toast(cls, icon, title, text, leadId){
@@ -1187,7 +1187,7 @@ function setCountry(k){
   try { history.replaceState(null, "", "?c=" + k); } catch(e){}
 }
 $("ctry").onchange = function(){ setCountry(this.value); };
-addEventListener("resize", function(){ if (PAGE === "overview") chartLater(); });
+addEventListener("resize", function(){ if (G && AG && EV && LD && PAGE === "overview") chartLater(); });
 setSound(sound, true);
 $("agSearch").addEventListener("input", function(){ drawAgents(); });
 if (REAL) realBoot(); else setCountry(K);

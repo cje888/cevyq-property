@@ -687,7 +687,15 @@ function lastSeen(id){ for (var i = EV.length - 1; i >= 0; i--) if (EV[i].a === 
 function avgReply(id, from){ var ls = LD.filter(function(l){ return l.a === id && l.ts >= from; }), r = ls.filter(function(l){ return l.reply != null; }); if (!ls.length) return null; if (!r.length) return -1; return Math.round(r.reduce(function(s, l){ return s + l.reply; }, 0) / r.length); }
 var SRCL = {qr:"a QR code", whatsapp:"WhatsApp", facebook:"Facebook", instagram:"Instagram", linkedin:"LinkedIn", google:"Google", x:"X", website:"another website"};
 function niceTap(r){ r = String(r || "a button"); var L = {qr:"Show QR code", directions:"Directions", review:"Review", website:"Website", claim:"Claim it", facebook:"Facebook", instagram:"Instagram", linkedin:"LinkedIn", tiktok:"TikTok", youtube:"YouTube", download:"Download"}; if (L[r]) return L[r]; r = r.replace(/^(tap|link)_/, "").replace(/_/g, " "); return r.charAt(0).toUpperCase() + r.slice(1); }
-function cardUrl(a){ if (!REAL) return "../" + G.slug + "/"; var u = a.url || "#"; return u === "#" ? u : u + (u.indexOf("?") > -1 ? "&" : "?") + "me=1"; }
+function cardUrl(a){
+  if (!REAL) return "../" + G.slug + "/";
+  try {
+    var u = new URL(a.url || "");
+    if ((u.protocol !== "https:" && u.protocol !== "http:") || u.username || u.password) return "#";
+    u.searchParams.set("me", "1");
+    return u.href;
+  } catch (e) { return "#"; }
+}
 function evText(e){
   var a = AG[e.a], li = e.ref ? G.listings.filter(function(x){ return x[0] === e.ref; })[0] : null, l = e.lead ? LD.filter(function(x){ return x.id === e.lead; })[0] : null;
   switch (e.k){
@@ -874,7 +882,7 @@ function drawAgents(){
     return '<div class="box acard"><div class="tp"><img src="' + a.img + '" alt="" style="' + (a.on ? "" : "filter:grayscale(1);opacity:.5") + '"><span style="min-width:0"><b>' + esc(a.name) + '</b><small>' + esc(a.tel) + '</small><span class="badge ' + x.b[0] + '" style="margin-top:6px">' + x.b[1] + '</span></span></div>' +
       '<div class="ms"><div><b class="num">' + grp(x.s.open) + '</b><small>opens</small></div><div><b class="num">' + grp(x.s.save) + '</b><small>saved</small></div><div><b class="num">' + grp(x.s.enq + x.s.call) + '</b><small>enquiries</small></div></div>' +
       (REAL ? '<div class="rw"><span>Last active ' + ago(lastSeen(a.id)) + '</span></div>' : '<div class="rw"><span>Card ' + (a.on ? "working" : "switched off") + '</span><button class="sw" role="switch" aria-checked="' + a.on + '" data-sw="' + a.id + '" aria-label="Card on or off"></button></div>') +
-      '<div class="bt"><button class="btn" data-ag="' + a.id + '">Details</button><a class="btn" href="' + cardUrl(a) + '" target="_blank" rel="noopener">Open card</a></div></div>';
+      '<div class="bt"><button class="btn" data-ag="' + a.id + '">Details</button><a class="btn" href="' + esc(cardUrl(a)) + '" target="_blank" rel="noopener">Open card</a></div></div>';
   }).join("") + '<button class="addcard" id="addBtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></i>Add new agent<small style="color:var(--soft);font-weight:600">Card ready within a day</small></button>' + (more ? '<p class="empty" style="grid-column:1/-1">Showing the 90 most active. Use the search to find the rest.</p>' : '');
   $("acards").querySelectorAll("[data-ag]").forEach(function(b){ b.addEventListener("click", function(){ openAgent(+b.getAttribute("data-ag")); }); });
   $("acards").querySelectorAll("[data-sw]").forEach(function(b){ b.addEventListener("click", function(){ var a = AG[+b.getAttribute("data-sw")]; a.on = !a.on; refresh(true); toast(a.on ? "c4" : "c5", TYPES.save.i, a.first + "'s card is " + (a.on ? "back on" : "switched off"), a.on ? "Taps and leads are being tracked again." : "The link stops working. New enquiries go to the office."); }); });
@@ -912,7 +920,7 @@ function openAgent(id){
     '<div class="grid" style="grid-template-columns:repeat(3,1fr);gap:10px">' + [["Opens", s.open], ["People", s.people], ["Saved", s.save], ["WhatsApp", s.whatsapp], ["Calls", s.call], ["Leads", s.leads]].map(function(x){ return '<div style="background:var(--line2);border-radius:12px;padding:12px;text-align:center"><b style="display:block;font-family:Unbounded;font-weight:600;font-size:1.3rem;color:var(--ink)" class="num">' + grp(x[1]) + '</b><small style="color:var(--soft)">' + x[0] + '</small></div>'; }).join("") + '</div>' +
     '<h4 style="margin:22px 0 4px;color:var(--ink)">Latest leads</h4>' + (ls.slice(0, 5).map(function(l){ return '<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2);cursor:pointer" data-l="' + l.id + '"><span><b style="color:var(--ink)">' + esc(l.name) + '</b><br><small style="color:var(--soft)">' + esc(l.want) + '</small></span><span class="badge st-' + l.st + '" style="align-self:center">' + SLAB[l.st] + '</span></div>'; }).join("") || '<p style="color:var(--faint)">No leads yet.</p>') +
     '<h4 style="margin:22px 0 10px;color:var(--ink)">Latest activity</h4><div class="tl">' + evs.map(function(e){ return '<div>' + evText(e) + '<small>' + when(e.ts) + '</small></div>'; }).join("") + '</div>',
-    '<a class="btn wa" href="https://wa.me/?text=' + encodeURIComponent("Hi " + a.first + ", ") + '" target="_blank" rel="noopener">WhatsApp ' + esc(a.first) + '</a><a class="btn" href="' + cardUrl(a) + '" target="_blank" rel="noopener">Open card</a>');
+    '<a class="btn wa" href="https://wa.me/?text=' + encodeURIComponent("Hi " + a.first + ", ") + '" target="_blank" rel="noopener">WhatsApp ' + esc(a.first) + '</a><a class="btn" href="' + esc(cardUrl(a)) + '" target="_blank" rel="noopener">Open card</a>');
   bindLeads($("dBody"));
 }
 function openLead(id){

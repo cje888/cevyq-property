@@ -366,6 +366,7 @@ td select{padding:6px 8px;border-radius:9px;border:1px solid var(--line);backgro
   .side,.top,.strip,.toasts,.nopr{display:none!important}
   .app{display:block}.page{padding:0}
   body{background:#fff}.box{box-shadow:none;break-inside:avoid}
+  body.sample::before{content:"SAMPLE DATA — fictional agents, customers and activity";display:block;font-weight:800;padding:12px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -404,7 +405,7 @@ td select{padding:6px 8px;border-radius:9px;border:1px solid var(--line);backgro
     </header>
 
     <div class="strip">
-      <span class="pulse"></span><span>Live and capturing leads</span><span class="dv">|</span><span id="stripLast">Last activity just now</span><span class="dv hidem">|</span><span class="hidem" id="stripLaw"></span>
+      <span class="pulse"></span><span id="dataMode">Sign-in required</span><span class="dv">|</span><span id="stripLast">Last activity just now</span><span class="dv hidem">|</span><span class="hidem" id="stripLaw"></span>
       <label class="demo nopr">Sample agency <select id="ctry"><option value="sa">South Africa</option><option value="usa">United States</option><option value="aus">Australia</option></select></label>
     </div>
 
@@ -490,7 +491,7 @@ td select{padding:6px 8px;border-radius:9px;border:1px solid var(--line);backgro
         </div>
       </div>
       <div class="box set" style="margin-top:18px" id="demoSet">
-        <div class="rr"><span><b>Connect the live sample card</b><small>For demos. Enter the Card Desk owner code for this sample card and every real tap on it shows here within seconds.</small><small id="liveState" style="margin-top:6px;font-weight:700"></small></span><span class="codebox"><input id="liveCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="btn pri" id="liveGo">Connect</button></span></div>
+        <div class="rr"><span><b>Sample data only</b><small>All agents, customers and activity in this sample are fictional. No live card or customer data is connected.</small></span></div>
         <div class="rr"><span><b>Presenter keys</b><small>During a demo press <span class="kbd">N</span> for a new lead, <span class="kbd">C</span> for a call or <span class="kbd">O</span> for a card open.</small></span><span></span></div>
       </div>
     </section>
@@ -511,8 +512,8 @@ td select{padding:6px 8px;border-radius:9px;border:1px solid var(--line);backgro
 </div>
 <div class="toasts" id="toasts"></div>
 <div class="gate" id="gate" hidden><form class="gb" id="gateForm"><img src="cq-mark.png" alt=""><div class="wm">CEVYQ<small>PROPERTY</small></div>
-  <h2 id="gateTitle">Sign in to your dashboard</h2><p id="gateSub">Enter the 6 digit code CEVYQ sent you on WhatsApp.</p>
-  <input id="gateCode" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" aria-label="6 digit code">
+  <h2 id="gateTitle">Sign in to your dashboard</h2><p id="gateSub">Enter your owner code or passphrase.</p>
+  <input id="gateCode" type="password" maxlength="128" autocomplete="current-password" aria-label="Owner code or passphrase" required>
   <button class="btn pri big" id="gateGo" type="submit">Open my dashboard</button><div class="err" id="gateErr" role="alert"></div>
   <p class="sm">Lost your code? <a href="https://wa.me/66631101888?text=Hi%20Chris%2C%20I%20need%20my%20CEVYQ%20Property%20dashboard%20code." target="_blank" rel="noopener">WhatsApp CEVYQ</a> · <a href="?c=sa">See the sample</a></p></form></div>
 
@@ -563,17 +564,25 @@ var A = {
 var store = { get:function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set:function(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
 var qs = new URLSearchParams(location.search);
 var K = qs.get("c"); if (!A[K]) K = store.get("cqp_c"); if (!A[K]) K = "sa";
+var DEMO = !qs.has("a") && Object.prototype.hasOwnProperty.call(A, qs.get("c"));
 var REAL = null, REALTOK = null, lastId = 0, realTimer = null;
-(function(){ var qa = (qs.get("a") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40);
-  if (qs.get("c")) REAL = null; else if (qa) REAL = qa; else { var m = store.get("cqp_mode"); if (m && store.get("cqp_tok_" + m)) REAL = m; } })();
+(function(){
+  var qa = (qs.get("a") || "").toLowerCase();
+  // A live URL always wins. Only an explicit, valid sample URL enables demo data.
+  if (!DEMO){
+    var m = store.get("cqp_mode");
+    REAL = /^[a-z0-9-]{1,40}$/.test(qa) ? qa :
+      (!qs.has("a") && /^[a-z0-9-]{1,40}$/.test(m || "") ? m : "all");
+  }
+})();
 var G, AG, EV, LD, RANGE = 7, PAGE = "overview", seen = Date.now(), pend = {open:0, enq:0, call:0}, sound = store.get("cqp_snd") !== "0", feedF = "all", feedAgent = "";
 
 var TYPES = {
   open:{t:"Card opened", c:"c1", i:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'},
   save:{t:"Saved contact", c:"c3", i:'<circle cx="11" cy="8" r="4"/><path d="M3 21c1-4 4-6 8-6 2 0 3.6.5 5 1.4"/><path d="M19 15v6M16 18h6"/>'},
   listing:{t:"Viewed a listing", c:"c2", i:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>'},
-  whatsapp:{t:"WhatsApp chat", c:"c4", i:'<path d="M3 21l1.6-5A9 9 0 1112 21a9 9 0 01-4.2-1z"/>', enq:1},
-  call:{t:"Phone call", c:"c5", i:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/>', call:1},
+  whatsapp:{t:"WhatsApp tap", c:"c4", i:'<path d="M3 21l1.6-5A9 9 0 1112 21a9 9 0 01-4.2-1z"/>', enq:1},
+  call:{t:"Phone tap", c:"c5", i:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/>', call:1},
   viewing:{t:"Viewing booked", c:"c6", i:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', enq:1},
   valuation:{t:"Valuation request", c:"c6", i:'<path d="M4 20h16M6 16l4-5 3 3 5-7"/>', enq:1},
   form:{t:"Enquiry form", c:"c5", i:'<path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/>', enq:1},
@@ -587,6 +596,7 @@ var STATUS = ["New","Contacted","Viewing","Offer","Won","Lost"], SLAB = {New:"Ne
 /* ---------- seeded data ---------- */
 function rng(seed){ var s = seed >>> 0; return function(){ s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function build(){
+  if (!DEMO || REAL) return;
   G = A[K];
   var R = rng(K === "sa" ? 7 : K === "usa" ? 11 : 13), r = function(n){ return Math.floor(R() * n); };
   var W = [1, .62, .34, .12, .015];
@@ -684,8 +694,8 @@ function evText(e){
     case "open": return "<b>" + esc(a.first) + "'s</b> card was opened in " + esc(e.area);
     case "save": return "Someone saved <b>" + esc(a.first) + "'s</b> number to their phone";
     case "listing": return "Looked at <b>" + esc(li ? li[1] : "a listing") + "</b> on " + esc(a.first) + "'s card";
-    case "whatsapp": return (l ? "<b>" + esc(l.name) + "</b>" : "A client") + " started a WhatsApp chat with " + esc(a.first);
-    case "call": return (l ? "<b>" + esc(l.name) + "</b>" : "A client") + " called " + esc(a.first) + " from the card";
+    case "whatsapp": if (REAL) return "WhatsApp link tapped on " + esc(a.first) + "'s card; message delivery is not confirmed"; return (l ? "<b>" + esc(l.name) + "</b>" : "A client") + " started a WhatsApp chat with " + esc(a.first);
+    case "call": if (REAL) return "Phone link tapped on " + esc(a.first) + "'s card; call completion is not confirmed"; return (l ? "<b>" + esc(l.name) + "</b>" : "A client") + " called " + esc(a.first) + " from the card";
     case "viewing": return "<b>" + esc(l ? l.name : "A client") + "</b> booked a viewing with " + esc(a.first);
     case "valuation": return "<b>" + esc(l ? l.name : "A home owner") + "</b> asked " + esc(a.first) + " for a free valuation";
     case "form": return "<b>" + esc(l ? l.name : "A client") + "</b> sent " + esc(a.first) + " an enquiry";
@@ -725,7 +735,7 @@ function delta(a, b){
   if (p === 0) return '<div class="d eq">Same <span>as last period</span></div>';
   return '<div class="d ' + (p > 0 ? "up" : "dn") + '">' + (p > 0 ? "▲ " : "▼ ") + Math.abs(p) + '% <span>vs last period</span></div>';
 }
-var KP = [["open","Card opens","c1","open"],["people","People reached","c2","open"],["save","Contacts saved","c3","save"],["whatsapp","WhatsApp chats","c4","whatsapp"],["call","Calls","c5","call"],["leads","Leads captured","c6","enq"]];
+var KP = [["open","Card opens","c1","open"],["people","People reached","c2","open"],["save","Contacts saved","c3","save"],["whatsapp","WhatsApp taps","c4","whatsapp"],["call","Phone taps","c5","call"],["leads","Leads captured","c6","enq"]];
 var KI = {open:TYPES.open.i, people:'<circle cx="9" cy="8" r="4"/><path d="M2 21c.8-4 3.6-6 7-6s6.2 2 7 6"/><path d="M16 4a4 4 0 010 8M19 15c1.6.8 2.6 2.8 3 6"/>', save:TYPES.save.i, whatsapp:TYPES.whatsapp.i, call:TYPES.call.i, leads:TYPES.form.i};
 var FEEDK = {open:"all", people:"all", save:"save", whatsapp:"whatsapp", call:"call", leads:"leads"};
 function drawKpis(){
@@ -836,7 +846,7 @@ function drawFeed(){
 }
 function evHtml(e, fresh){
   var a = AG[e.a];
-  return '<div class="ev' + (fresh ? " fresh" : "") + (e.ts > seen ? " unseen" : "") + '"><span class="li ' + TYPES[e.k].c + '">' + svgI(e.k) + '</span><img src="' + a.img + '" alt=""><span style="min-width:0"><p>' + evText(e) + (e.live ? '<span class="livepill">LIVE</span>' : '') + '</p><small>' + TYPES[e.k].t + ' · ' + esc(e.area) + ' · on a ' + e.dev + '</small></span><span class="t">' + clock(e.ts) + '<br><small>' + ago(e.ts) + '</small></span></div>';
+  return '<div class="ev' + (fresh ? " fresh" : "") + (e.ts > seen ? " unseen" : "") + '"><span class="li ' + TYPES[e.k].c + '">' + svgI(e.k) + '</span><img src="' + a.img + '" alt=""><span style="min-width:0"><p>' + evText(e) + (DEMO ? '<span class="livepill">SAMPLE</span>' : e.live ? '<span class="livepill">LIVE</span>' : '') + '</p><small>' + TYPES[e.k].t + ' · ' + esc(e.area) + ' · on a ' + e.dev + '</small></span><span class="t">' + clock(e.ts) + '<br><small>' + ago(e.ts) + '</small></span></div>';
 }
 function drawLeads(){
   var q = $("lq").value.trim().toLowerCase(), st = $("lStatus").value, ag = $("lAgent").value, ty = $("lType").value;
@@ -882,8 +892,8 @@ function snapText(){
   var dd = new Date().toLocaleDateString(G.locale, {weekday:"long", day:"numeric", month:"long"});
   var tops = rr.slice().sort(function(a, b){ return stats(since(1), Date.now() + 1, b.a.id).open - stats(since(1), Date.now() + 1, a.a.id).open; });
   var best = tops[0], quiet = tops.filter(function(x){ return !stats(since(1), Date.now() + 1, x.a.id).open; }).map(function(x){ return x.a.first; });
-  return "*" + G.agency + "* daily snapshot\n" + dd + "\n\n" +
-    "Card opens: *" + t.open + "*\nPeople reached: *" + t.people + "*\nContacts saved: *" + t.save + "*\nWhatsApp chats: *" + t.whatsapp + "*\nCalls: *" + t.call + "*\nNew leads: *" + t.leads + "*\n\n" +
+  return (DEMO ? "SAMPLE DATA — fictional agents, customers and activity\n\n" : "") + "*" + G.agency + "* daily snapshot\n" + dd + "\n\n" +
+    "Card opens: *" + t.open + "*\nPeople reached: *" + t.people + "*\nContacts saved: *" + t.save + "*\nWhatsApp taps: *" + t.whatsapp + "*\nPhone taps: *" + t.call + "*\nNew leads: *" + t.leads + "*\n\n" +
     (best ? "Top agent today: *" + best.a.first + "* with " + stats(since(1), Date.now() + 1, best.a.id).open + " opens\n" : "") +
     (quiet.length ? "No card activity: " + quiet.join(", ") + "\n" : "Every agent's card was used today\n") +
     (slow ? "Leads waiting over an hour: *" + slow + "*\n" : "Every lead has had a reply\n") + "\nOpen your dashboard: property.cevyq.com/dashboard";
@@ -936,10 +946,11 @@ $("mSave").onclick = function(){
 /* ---------- live activity ---------- */
 var Rl = rng(Date.now() % 1e9), rl = function(n){ return Math.floor(Rl() * n); };
 function pickAgent(){ var on = AG.filter(function(a){ return a.on && !a.isNew; }), s = 0; on.forEach(function(a){ s += a.w; }); var x = Rl() * s; for (var i = 0; i < on.length; i++){ x -= on[i].w; if (x <= 0) return on[i]; } return on[0]; }
-function liveEvent(kind, agent, real){
+function liveEvent(kind, agent){
+  if (!DEMO || REAL) return;
   var a = agent || pickAgent(); if (!a) return;
   var k = kind; if (!k){ var x = Rl(); k = x < .52 ? "open" : x < .7 ? "listing" : x < .8 ? "save" : x < .88 ? "whatsapp" : x < .93 ? "call" : x < .96 ? "viewing" : x < .98 ? "form" : "valuation"; }
-  var e = add({a:a.id, k:k, ts:Date.now(), v:"v" + rl(1e9), area:G.areas[rl(G.areas.length)], dev:Rl() < .85 ? "phone" : "computer", live:!!real});
+  var e = add({a:a.id, k:k, ts:Date.now(), v:"v" + rl(1e9), area:G.areas[rl(G.areas.length)], dev:Rl() < .85 ? "phone" : "computer", sample:true});
   if (k === "listing") e.ref = G.listings[rl(G.listings.length)][0];
   var lead = null;
   if (TYPES[k].enq || (k === "call" && Rl() < .6)) lead = mkLead(e, Rl, rl, true);
@@ -967,7 +978,7 @@ function updAlert(){
 }
 $("alertBtn").onclick = function(){ feedF = pend.enq ? "leads" : pend.call ? "call" : "all"; go("live"); };
 function markSeen(){ seen = Date.now(); if (REAL) store.set("cqp_seen_" + REAL, String(seen)); pend = {open:0, enq:0, call:0}; updAlert(); }
-(function tick(){ setTimeout(function(){ if (!document.hidden && !REAL && G) liveEvent(); tick(); }, 5000 + Rl() * 9000); })();
+// Sample events are generated only by the explicit presenter shortcuts.
 setInterval(function(){ if (PAGE === "overview"){ drawRank(); } }, 60000);
 
 /* toasts */
@@ -979,31 +990,8 @@ function toast(cls, icon, title, text, leadId){
   setTimeout(function(){ t.classList.add("out"); setTimeout(function(){ t.remove(); }, 320); }, 6500);
 }
 
-/* ---------- real card link (Card Desk owner code) ---------- */
-var API = "https://cevyq-stats.chris-e41.workers.dev", liveTok = null, lastEv = null, liveTimer = null;
-function liveKey(){ return "cqp_live_" + G.card; }
-function liveStart(){
-  liveTok = store.get(liveKey()); clearInterval(liveTimer); lastEv = null;
-  $("liveState").textContent = liveTok ? "Connected. Real taps on the " + G.agency + " sample card show with a red LIVE tag." : "";
-  if (!liveTok) return; poll(); liveTimer = setInterval(poll, 8000);
-}
-function poll(){
-  fetch(API + "/owner/stats", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({c:G.card, t:liveTok})}).then(function(r){ return r.json().then(function(j){ j._s = r.status; return j; }); }).then(function(j){
-    if (j._s === 401){ store.set(liveKey(), ""); liveTok = null; clearInterval(liveTimer); $("liveState").textContent = "Signed out. Enter the code again."; return; }
-    if (j._s !== 200) return;
-    var ev = (j[j.month] || {}).ev || {};
-    if (lastEv){ Object.keys(ev).forEach(function(k){ var d = ev[k] - (lastEv[k] || 0); if (d <= 0) return; var kind = k === "open" ? "open" : k === "save_contact" ? "save" : k === "whatsapp" ? "whatsapp" : k === "call" ? "call" : k === "viewing_booked" ? "viewing" : k === "form_sent" ? "form" : k.indexOf("tap_listing") === 0 ? "listing" : k === "tap_home_value" ? "valuation" : null; if (!kind) return; for (var i = 0; i < Math.min(d, 5); i++) liveEvent(kind, AG[0], true); }); }
-    lastEv = ev;
-  }).catch(function(){});
-}
-$("liveGo").onclick = function(){
-  var code = $("liveCode").value.replace(/\D/g, ""); if (code.length !== 6){ $("liveState").textContent = "Please enter all 6 numbers."; return; }
-  $("liveState").textContent = "Connecting...";
-  fetch(API + "/owner/login", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({c:G.card, code:code})}).then(function(r){ return r.json(); }).then(function(j){
-    if (j.token){ store.set(liveKey(), j.token); $("liveCode").value = ""; liveStart(); toast("c4", TYPES.open.i, "Live card connected", "Tap the sample card on your phone and watch it land here."); }
-    else $("liveState").textContent = (j.error || "That code did not work.") + (j.left ? " " + j.left + " tries left." : "");
-  }).catch(function(){ $("liveState").textContent = "No connection. Please try again."; });
-};
+/* The demo never polls live counters or invents identities from real activity. */
+var API = "https://cevyq-stats.chris-e41.workers.dev";
 
 /* ---------- navigation ---------- */
 var TITLES = {overview:"Overview", live:"Live activity", leads:"Leads", agents:"Agents", listings:"Listings", reports:"Reports", settings:"Settings"};
@@ -1041,6 +1029,7 @@ $("installBtn").onclick = function(){ if (deferredInstall){ deferredInstall.prom
 
 /* csv */
 function csv(rows, name){
+  if (DEMO){ rows = [["SAMPLE DATA — fictional agents, customers and activity"]].concat(rows); name = "SAMPLE_" + name; }
   var s = "﻿" + rows.map(function(r){ return r.map(function(c){ c = String(c == null ? "" : c); return /[",\n;]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(","); }).join("\r\n");
   var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([s], {type:"text/csv;charset=utf-8"})); a.download = name; document.body.appendChild(a); a.click(); a.remove();
 }
@@ -1048,14 +1037,14 @@ function stamp(){ return new Date().toISOString().slice(0, 10); }
 function leadRows(){ var P = period(); return [["Name","Mobile","Type","Looking for","Agent","Came in","First reply (minutes)","Status"]].concat(LD.filter(function(l){ return l.ts >= P.from; }).sort(function(a, b){ return b.ts - a.ts; }).map(function(l){ return [l.name, l.tel, l.type, l.want, AG[l.a].name, new Date(l.ts).toLocaleString(G.locale), l.reply == null ? "" : l.reply, SLAB[l.st]]; })); }
 $("leadCsv").onclick = function(){ csv(leadRows(), G.agency.replace(/\W+/g, "_") + "_Leads_" + stamp() + ".csv"); };
 $("feedCsv").onclick = function(){ csv([["Time","Agent","What happened","Area","Device"]].concat(EV.slice(-2000).reverse().map(function(e){ return [new Date(e.ts).toLocaleString(G.locale), AG[e.a].name, TYPES[e.k].t, e.area, e.dev]; })), G.agency.replace(/\W+/g, "_") + "_Activity_" + stamp() + ".csv"); };
-$("repCsv").onclick = function(){ var P = period(); var rows = [[G.agency + " team report, " + (RANGE === 1 ? "today" : "last " + RANGE + " days")], [], ["Agent","Card opens","People reached","Contacts saved","WhatsApp chats","Calls","Viewings booked","Leads","Average first reply (minutes)","Card"]].concat(AG.map(function(a){ var s = stats(P.from, P.to, a.id), r = avgReply(a.id, P.from); return [a.name, s.open, s.people, s.save, s.whatsapp, s.call, s.viewing, s.leads, r == null || r < 0 ? "" : r, a.on ? "On" : "Off"]; })).concat([[], ["Leads"]]).concat(leadRows()); csv(rows, G.agency.replace(/\W+/g, "_") + "_Report_" + stamp() + ".csv"); };
+$("repCsv").onclick = function(){ var P = period(); var rows = [[G.agency + " team report, " + (RANGE === 1 ? "today" : "last " + RANGE + " days")], [], ["Agent","Card opens","People reached","Contacts saved","WhatsApp taps","Phone taps","Viewings booked","Leads","Average first reply (minutes)","Card"]].concat(AG.map(function(a){ var s = stats(P.from, P.to, a.id), r = avgReply(a.id, P.from); return [a.name, s.open, s.people, s.save, s.whatsapp, s.call, s.viewing, s.leads, r == null || r < 0 ? "" : r, a.on ? "On" : "Off"]; })).concat([[], ["Leads"]]).concat(leadRows()); csv(rows, G.agency.replace(/\W+/g, "_") + "_Report_" + stamp() + ".csv"); };
 $("snapWa").onclick = function(){ window.open("https://wa.me/?text=" + encodeURIComponent(snapText()), "_blank", "noopener"); };
 $("snapMail").onclick = function(){ location.href = "mailto:?subject=" + encodeURIComponent(G.agency + " daily snapshot") + "&body=" + encodeURIComponent(snapText().replace(/\*/g, "")); };
 $("repPrint").onclick = function(){ RANGE = 30; document.querySelectorAll("#range button").forEach(function(x){ x.setAttribute("aria-pressed", x.getAttribute("data-r") === "30"); }); go("overview"); setTimeout(function(){ print(); }, 400); };
 
 /* presenter keys */
 document.addEventListener("keydown", function(e){
-  if (REAL || /input|select|textarea/i.test(e.target.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!DEMO || REAL || /input|select|textarea/i.test(e.target.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
   var k = e.key.toLowerCase();
   if (k === "n") liveEvent(["form","viewing","valuation","whatsapp"][rl(4)], AG[0]);
   else if (k === "c") liveEvent("call", AG[0]);
@@ -1096,14 +1085,15 @@ function realPost(path, body){
   return fetch(API + path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)}).then(function(r){ return r.json().then(function(j){ j._s = r.status; return j; }); });
 }
 function realGate(msg){
+  $("dataMode").textContent = "Sign-in required";
   clearInterval(realTimer); $("gate").hidden = false; $("gateErr").textContent = msg || ""; $("gateCode").value = "";
   $("gateTitle").textContent = REAL === "all" ? "Sign in to all your cards" : "Sign in to your dashboard";
-  $("gateSub").textContent = REAL === "all" ? "Use the code on the stats row in Card Desk." : "Enter the 6 digit code CEVYQ sent you on WhatsApp.";
+  $("gateSub").textContent = REAL === "all" ? "Use your owner code or passphrase configured in Card Desk." : "Enter your owner code or passphrase.";
   setTimeout(function(){ $("gateCode").focus(); }, 50);
 }
 $("gateForm").onsubmit = function(e){
-  e.preventDefault(); var code = $("gateCode").value.replace(/\D/g, "");
-  if (code.length !== 6){ $("gateErr").textContent = "Please enter all 6 numbers."; return; }
+  e.preventDefault(); var code = $("gateCode").value;
+  if (!code || code.length > 128){ $("gateErr").textContent = "Enter your owner code or passphrase (up to 128 characters)."; return; }
   $("gateGo").disabled = true; $("gateErr").textContent = "";
   fetch(API + "/owner/login", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({c:REAL === "all" ? "stats" : "agency-" + REAL, code:code})}).then(function(r){ return r.json(); }).then(function(j){
     $("gateGo").disabled = false;
@@ -1112,7 +1102,7 @@ $("gateForm").onsubmit = function(e){
   }).catch(function(){ $("gateGo").disabled = false; $("gateErr").textContent = "No connection. Please try again."; });
 };
 function realBoot(){
-  if (REAL !== "all"){ try { navigator.sendBeacon(API + "/hit", new Blob([JSON.stringify({c:"agency-" + REAL, e:"listed", n:(qs.get("n") || REAL.replace(/-/g, " ")) + " (agency dashboard)", u:location.origin + "/dashboard/?a=" + REAL})], {type:"text/plain"})); } catch(e){} }
+  // Visiting a dashboard must not register an agency via the public event endpoint.
   REALTOK = store.get("cqp_tok_" + REAL);
   var lb = $("ctry").closest("label"); lb.outerHTML = '<span class="demo nopr"><button class="btn" id="signOut" style="padding:6px 12px;font-size:.82rem">Sign out</button></span>';
   $("signOut").onclick = function(){ store.set("cqp_tok_" + REAL, ""); store.set("cqp_mode", ""); location.href = location.pathname + "?a=" + REAL; };
@@ -1145,6 +1135,7 @@ function realLoad(){
     var last = EV[EV.length - 1]; $("stripLast").textContent = last ? "Last activity " + ago(last.ts) : "No activity yet";
     seen = +(store.get("cqp_seen_" + REAL) || 0) || Date.now() - 864e5; pend = {open:0, enq:0, call:0};
     EV.forEach(function(e){ if (e.ts > seen){ if (e.k === "open") pend.open++; else if (TYPES[e.k].enq) pend.enq++; else if (e.k === "call") pend.call++; } });
+    $("dataMode").textContent = "Live data from Card Desk";
     fillSelects(); updAlert();
     if (!AG.length) toast("c1", TYPES.open.i, "No cards linked yet", "Cards show here as soon as CEVYQ links them to " + G.agency + ".");
     go(PAGE); clearInterval(realTimer); realTimer = setInterval(realPoll, 15000);
@@ -1155,7 +1146,7 @@ function realPoll(){
   realPost("/prop/data", {after:lastId}).then(function(j){
     if (j._s === 401){ store.set("cqp_tok_" + REAL, ""); return realGate("Please sign in again."); }
     if (j._s !== 200) return;
-    if (j.cards.length !== AG.length) return realLoad();
+    if (j.cards.length !== AG.length || j.cards.some(function(c, i){ return c.id !== AG[i].cid; })) return realLoad();
     var known = {}; LD.forEach(function(l){ known[l.id] = 1; });
     var fresh = j.leads.map(mapLead).filter(Boolean), newLeads = fresh.filter(function(l){ return !known[l.id]; });
     LD = fresh;
@@ -1177,19 +1168,22 @@ function fillSelects(){
   $("lStatus").innerHTML = '<option value="">Every status</option>' + STATUS.map(function(s){ return '<option value="' + s + '">' + SLAB[s] + '</option>'; }).join("");
 }
 function setCountry(k){
+  if (!DEMO || REAL || !Object.prototype.hasOwnProperty.call(A, k)) return;
   K = k; store.set("cqp_c", k); $("ctry").value = k; build();
   var r = document.documentElement.style; r.setProperty("--agency", G.colors[0]); r.setProperty("--agency2", G.colors[1]);
   $("agMark").textContent = G.mark; $("agName").textContent = G.agency; $("agBranch").textContent = G.branch;
   $("prInit").textContent = G.principal.split(" ").map(function(x){ return x[0]; }).join("").slice(0, 2); $("prName").textContent = G.principal;
   $("stripLaw").textContent = G.lawShort; $("lawTxt").textContent = G.law; $("sysTxt").textContent = AG.length + " agent cards tracking";
   $("swatch").innerHTML = '<i style="background:' + G.colors[0] + '"></i><i style="background:' + G.colors[1] + '"></i>';
-  var last = EV[EV.length - 1]; $("stripLast").textContent = "Last activity " + ago(last.ts);
+  document.body.classList.add("sample");
+  $("dataMode").textContent = "SAMPLE — fictional data, no live connection";
+  var last = EV[EV.length - 1]; $("stripLast").textContent = "Sample activity " + ago(last.ts);
   pend = {open:0, enq:0, call:0}; seen = Date.now();
   // a little backlog so the bell has something to show on first look
   var back = EV.filter(function(e){ return e.ts > Date.now() - 3*36e5; });
   back.forEach(function(e){ if (e.k === "open") pend.open++; else if (TYPES[e.k].enq) pend.enq++; else if (e.k === "call") pend.call++; });
   seen = Date.now() - 3*36e5;
-  fillSelects(); updAlert(); liveStart(); go(PAGE);
+  fillSelects(); updAlert(); go(PAGE);
   try { history.replaceState(null, "", "?c=" + k); } catch(e){}
 }
 $("ctry").onchange = function(){ setCountry(this.value); };

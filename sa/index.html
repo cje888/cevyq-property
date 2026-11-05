@@ -753,7 +753,7 @@ var C = {"slug": "sa", "cardid": "property-sa", "name": "Jessica van der Merwe",
       var noMe = true; try { noMe = localStorage.getItem("cevyq_me") !== "1"; } catch(x){}
       if (base && noMe) fetch(base + "/prop/lead", {method:"POST", keepalive:true, headers:{"Content-Type":"text/plain"}, body:JSON.stringify({c:t.getAttribute("data-card"), n:n, tel:t2, k:fmode === "sell" ? "Seller" : fmode === "rent" ? "Tenant" : "Buyer", w:want, v:fmode})});
     } catch(x){}
-    wa(msg); say("Sent to " + C.first + " and the office");
+    wa(msg); say("Sample only: WhatsApp opened. No enquiry was saved to the office.");
   });
   setF("buy");
 
@@ -813,6 +813,6 @@ var C = {"slug": "sa", "cardid": "property-sa", "name": "Jessica van der Merwe",
   }
 })();
 </script>
-<script src="https://cevyq-stats.chris-e41.workers.dev/t.js" data-card="property-sa" data-name="South Africa real estate demo (Jessica van der Merwe)" data-agency="" data-person="Jessica van der Merwe" data-agent="" defer></script>
+<!-- Sample card: production tracking and lead ingestion are disabled. -->
 </body>
 </html>

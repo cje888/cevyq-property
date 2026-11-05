@@ -70,8 +70,8 @@
   </div>
 
   <form class="card" id="login" hidden>
-    <label for="code">Enter your 6 digit owner code</label>
-    <input id="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+    <label for="code">Enter your owner code or passphrase</label>
+    <input id="code" type="password" maxlength="128" autocomplete="current-password" required>
     <button class="go" id="goBtn" type="submit">See my stats</button>
     <div class="err" id="err" role="alert"></div>
     <p class="note">Your code was sent to you on WhatsApp by CEVYQ Group. Lost it? Message us on <a href="https://wa.me/66631101888" style="color:var(--jade2);text-decoration:underline">+66 63 110 1888</a>.</p>
@@ -161,8 +161,8 @@
   }
   $('login').onsubmit = function (e) {
     e.preventDefault();
-    var code = $('code').value.replace(/\D/g, '');
-    if (code.length !== 6) { $('err').textContent = 'Please enter all 6 numbers.'; return; }
+    var code = $('code').value;
+    if (!code || code.length > 128) { $('err').textContent = 'Enter your owner code or passphrase (up to 128 characters).'; return; }
     $('goBtn').disabled = true; $('err').textContent = '';
     post('/owner/login', { c: CARD, code: code }).then(function (j) {
       $('goBtn').disabled = false;

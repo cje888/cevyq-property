@@ -564,15 +564,15 @@ var A = {
 var store = { get:function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set:function(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
 var qs = new URLSearchParams(location.search);
 var K = qs.get("c"); if (!A[K]) K = store.get("cqp_c"); if (!A[K]) K = "sa";
-var DEMO = !qs.has("a") && Object.prototype.hasOwnProperty.call(A, qs.get("c"));
+// The plain link is the sample dashboard for showing managers: sample data, no sign in.
+// A real agency link (?a=<name>) always asks for that agency's code, because it shows real clients.
+var DEMO = !qs.has("a");
 var REAL = null, REALTOK = null, lastId = 0, realTimer = null;
 (function(){
   var qa = (qs.get("a") || "").toLowerCase();
   // A live URL always wins. Only an explicit, valid sample URL enables demo data.
   if (!DEMO){
-    var m = store.get("cqp_mode");
-    REAL = /^[a-z0-9-]{1,40}$/.test(qa) ? qa :
-      (!qs.has("a") && /^[a-z0-9-]{1,40}$/.test(m || "") ? m : "all");
+    REAL = /^[a-z0-9-]{1,40}$/.test(qa) ? qa : "all";
   }
 })();
 var G, AG, EV, LD, RANGE = 7, PAGE = "overview", seen = Date.now(), pend = {open:0, enq:0, call:0}, sound = store.get("cqp_snd") !== "0", feedF = "all", feedAgent = "";
@@ -1201,5 +1201,6 @@ $("agSearch").addEventListener("input", function(){ drawAgents(); });
 if (REAL) realBoot(); else setCountry(K);
 })();
 </script>
+<script>if (!new URLSearchParams(location.search).has("a")){ var ts = document.createElement("script"); ts.src = "https://cevyq-stats.chris-e41.workers.dev/t.js"; ts.defer = true; ts.dataset.card = "demo-dashboard"; ts.dataset.name = "Managers dashboard demo"; document.body.appendChild(ts); }</script>
 </body>
 </html>

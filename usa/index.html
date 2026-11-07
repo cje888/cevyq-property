@@ -542,8 +542,8 @@ var C = {"slug": "usa", "cardid": "property-usa", "name": "Ava Morales", "first"
 
   var toast = $("toast"), tt;
   function say(t){ toast.textContent = t; toast.classList.add("on"); clearTimeout(tt); tt = setTimeout(function(){ toast.classList.remove("on"); }, 2600); }
-  function wa(text){ window.open("https://wa.me/" + C.wa + "?text=" + encodeURIComponent(text), "_blank", "noopener"); }
-  var HI = "Hi " + C.first + ", I found your card and would like to ask about a property.";
+  function wa(){ window.open("https://wa.me/" + C.wa + "?text=" + encodeURIComponent(HI), "_blank", "noopener"); }
+  var HI = "Hello CEVYQ sales team, I'm interested in the offer.";
 
   // fill profile
   document.title = document.title;
@@ -581,7 +581,7 @@ var C = {"slug": "usa", "cardid": "property-usa", "name": "Ava Morales", "first"
       e.preventDefault(); var g = a.getAttribute("data-go");
       if (g === "wa") wa(HI); else if (g === "call") location.href = "tel:" + C.tel;
       else if (g === "sms") location.href = "sms:" + C.tel + "?&body=" + encodeURIComponent(HI);
-      else location.href = "mailto:" + C.email + "?subject=" + encodeURIComponent("Property enquiry") + "&body=" + encodeURIComponent(HI);
+      else location.href = "mailto:" + C.email + "?subject=" + encodeURIComponent("Interested in the CEVYQ offer") + "&body=" + encodeURIComponent(HI);
     });
   });
 

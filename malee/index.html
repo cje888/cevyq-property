@@ -446,16 +446,17 @@
 
   var toast = document.getElementById("toast"), tt;
   function say(t){ toast.textContent = t; toast.classList.add("on"); clearTimeout(tt); tt = setTimeout(function(){ toast.classList.remove("on"); }, 2600); }
-  function wa(text){ window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(text), "_blank", "noopener"); }
+  var MSG = "Hello CEVYQ sales team, I'm interested in the offer.";
+  function wa(){ window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(MSG), "_blank", "noopener"); }
   function line(text){
     if (LINE_ID) window.open("https://line.me/R/ti/p/~" + encodeURIComponent(LINE_ID), "_blank", "noopener");
-    else window.open("https://line.me/R/msg/text/?" + encodeURIComponent(text), "_blank", "noopener");
+    else window.open("https://line.me/R/msg/text/?" + encodeURIComponent(MSG), "_blank", "noopener");
   }
 
   document.querySelectorAll("[data-go]").forEach(function(a){
     a.addEventListener("click", function(e){
       e.preventDefault();
-      var g = a.getAttribute("data-go"), hi = "Hi " + FIRST + ", I found your card and would like to ask about a property.";
+      var g = a.getAttribute("data-go"), hi = MSG;
       if (g === "wa") wa(hi); else if (g === "line") line(hi); else location.href = "tel:" + TEL;
     });
   });

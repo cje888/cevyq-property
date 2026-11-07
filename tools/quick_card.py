@@ -235,9 +235,19 @@ def build(a, rows, photos, force=False):
     html = sub_once(html, 'href="/dashboard/?c=sa"', f'href="/dashboard/?c={slug}"')
     html = re.sub(r'<a class="e" href="mailto:chris@cevyq\.com\?[^"]*"', f'<a class="e" href="{CLAIM_MAIL}"', html, count=1)
     html = sub_once(html, 'say("Sample only: WhatsApp opened. No enquiry was saved to the office.");', 'say("Sent to " + C.first);')
-    html = sub_once(html, "<!-- Sample card: production tracking and lead ingestion are disabled. -->",
-                    f'<script src="https://cevyq-stats.chris-e41.workers.dev/t.js" data-card="property-{slug}" '
-                    f'data-name="{esc_attr(name)}, {esc_attr(agency)} (preview)" data-agency="" data-person="{esc_attr(name)}" data-agent="Chris" defer></script>')
+    # Jessica's demo sends "Hello CEVYQ sales team" from every button; a real agent's card
+    # messages the agent by name and keeps each button's own message
+    html = sub_once(html, 'function wa(){ window.open("https://wa.me/" + C.wa + "?text=" + encodeURIComponent(HI), "_blank", "noopener"); }',
+                    'function wa(text){ window.open("https://wa.me/" + C.wa + "?text=" + encodeURIComponent(text), "_blank", "noopener"); }')
+    html = sub_once(html, 'var HI = "Hello CEVYQ sales team, I\'m interested in the offer.";',
+                    'var HI = "Hi " + C.first + ", I found your card and would like to ask about a property.";')
+    html = sub_once(html, 'encodeURIComponent("Interested in the CEVYQ offer")', 'encodeURIComponent("Property enquiry")')
+    html = sub_once(html, "<!-- Sample card: production tracking and lead ingestion are disabled. -->", "")
+    html, k = re.subn(r'<script src="https://cevyq-stats\.chris-e41\.workers\.dev/t\.js"[^>]*></script>',
+                      lambda _: f'<script src="https://cevyq-stats.chris-e41.workers.dev/t.js" data-card="property-{slug}" '
+                                f'data-name="{esc_attr(name)}, {esc_attr(agency)} (preview)" data-agency="" data-person="{esc_attr(name)}" data-agent="Chris" defer></script>', html)
+    if k != 1:
+        sys.exit("Master card changed, could not find the Card Desk tag")
 
     if out.exists():
         shutil.rmtree(out)

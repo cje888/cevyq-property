@@ -299,6 +299,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .fine{margin-top:20px;font-size:.72rem;color:var(--soft);text-align:center;line-height:1.5;opacity:.85}
 footer{margin-top:12px;text-align:center;font-size:.78rem;color:var(--soft)}
 footer a{text-decoration:underline;text-underline-offset:2px}
+footer .owner-link{display:block;width:max-content;margin:8px auto 0;color:var(--soft);text-decoration:none;font-size:.72rem;letter-spacing:.08em;opacity:.55;cursor:default}
+footer .owner-link.on{opacity:1;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 
 /* sticky bar */
 .dock{position:fixed;z-index:30;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translate(-50%,140%);width:calc(100% - 24px);max-width:536px;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;padding:8px;border-radius:22px;background:var(--dock);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 20px 40px -16px rgba(0,0,0,.5);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
@@ -481,7 +483,7 @@ footer a{text-decoration:underline;text-underline-offset:2px}
     </div>
   </div>
   <p class="fine" id="fine">Sample card. The agent, agency, licence numbers, listings, prices and reviews are made up for demonstration only.</p>
-  <footer>Built by <a href="https://www.cevyq.com" data-no-track>CEVYQ Group</a> · Business &amp; Technology Solutions</footer>
+  <footer>Built by <a href="https://www.cevyq.com" data-no-track>CEVYQ Group</a> · Business &amp; Technology Solutions<span class="owner-link" id="ownerLink" data-no-track>Dashboard</span></footer>
 </main>
 
 <nav class="dock" id="dock" aria-label="Quick contact">
@@ -811,6 +813,19 @@ var C = {"slug": "sa", "cardid": "property-sa", "name": "Jessica van der Merwe",
       }
     }).catch(function(){});
   }
+
+  // Dashboard link in the footer: inert until Chris marks the card Paid or Live in Card Desk.
+  (function(){
+    var link = $("ownerLink"); if (!link) return;
+    var base2 = (document.querySelector('script[src*="/t.js"]') || {}).src || "";
+    base2 = base2.replace(/\/t\.js.*$/, "");
+    if (!base2) return;
+    fetch(base2 + "/prop/state?c=" + encodeURIComponent(C.cardid)).then(function(r){ return r.json(); }).then(function(j){
+      if (!j.paid) return;
+      var a = document.createElement("a"); a.href = "./stats/"; a.className = "owner-link on"; a.textContent = "Dashboard"; a.setAttribute("data-no-track", "");
+      link.replaceWith(a);
+    }).catch(function(){});
+  })();
 })();
 </script>
 <!-- Sample card: production tracking and lead ingestion are disabled. -->

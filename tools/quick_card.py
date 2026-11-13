@@ -4,6 +4,18 @@
 Only the agent details, listings and photos change. The design, layout,
 booking, calculator and lead form all stay exactly as on Jessica's card.
 
+Two templates:
+  standard (blank "style") - Jessica's card as is, agent contacted on WhatsApp.
+  social / cas            - same design, but the agent's own contact buttons,
+                            lead form and dock send a Text (SMS) instead of
+                            WhatsApp, and a row of social/site links shows
+                            under the bio. Use this when the agent has no
+                            WhatsApp (common in the US) or you have socials
+                            to show (from a Linktree page etc). Set "style"
+                            to cas or social in the Agents sheet, and put the
+                            links in "socials" as Label|URL pairs, comma
+                            separated, e.g. Facebook|https://fb.com/x, TikTok|https://tiktok.com/@x
+
   python3 tools/quick_card.py --blank agents.xlsx        make an empty sheet to fill in
   python3 tools/quick_card.py agents.xlsx photos/        build every agent in the sheet
   python3 tools/quick_card.py agents.xlsx photos/ --only erica --force
@@ -23,13 +35,15 @@ MASTER = REPO / "sa" / "index.html"
 COUNTRY_MASTER = {"SA": "sa", "US": "usa", "AU": "aus"}
 PRICE = {"SA": "R1,500", "US": "$85", "AU": "A$110"}
 ROLE = {"SA": "Property Practitioner", "US": "Realtor", "AU": "Sales Agent"}
+SOCIAL_STYLES = ("cas", "social")
 MONEY_KEYS = ["cur", "sep", "rentPer", "rentPerWord", "loc", "tz", "tzName", "hours", "times",
               "moveIn", "moveInTxt", "calc", "types", "budgetBuy", "budgetRent", "telHint"]
 CLAIM_WA = "https://wa.me/66631101888?text=Hi%20Chris%2C%20I%20saw%20the%20card%20you%20made%20for%20me.%20Let%20us%20talk."
 CLAIM_MAIL = "mailto:chris@cevyq.com?subject=My%20CEVYQ%20card&body=Hi%20Chris%2C%20I%20saw%20the%20card%20you%20made%20for%20me.%20Let%20us%20talk.%20My%20name%20is%20"
 
 AGENT_COLS = ["slug", "name", "agency", "country", "whatsapp", "email", "city", "office",
-              "areas", "role", "intro", "profile link", "badge", "licence", "chips", "mark", "source"]
+              "areas", "role", "intro", "profile link", "badge", "licence", "chips", "mark", "source",
+              "style", "socials"]
 LIST_COLS = ["slug", "photos", "buy or rent", "price", "beds", "baths", "garages", "size",
              "area", "type", "title", "flag", "features", "description", "link"]
 AGENT_HELP = ["link name, lower case (blank = from name)", "Erica van Eden", "Pam Golding Properties",
@@ -37,7 +51,9 @@ AGENT_HELP = ["link name, lower case (blank = from name)", "Erica van Eden", "Pa
               "optional, e.g. Hout Bay office", "comma list, e.g. Hout Bay, Scott Estate", "optional (blank = country default)",
               "optional one or two lines", "agent page on agency site, optional", "optional, only if true, e.g. GoldClub Agent",
               "optional, only if true, e.g. PPRA full status FFC", "optional comma list, e.g. English, Afrikaans",
-              "optional logo letters (blank = agency initials)", "optional, where photos came from, e.g. pamgolding.co.za"]
+              "optional logo letters (blank = agency initials)", "optional, where photos came from, e.g. pamgolding.co.za",
+              "blank = standard (Jessica, WhatsApp), or cas (Text/SMS + socials row)",
+              "only for style cas, Label|URL pairs, comma separated, e.g. Facebook|https://fb.com/x"]
 LIST_HELP = ["same slug as Agents", "file names in photos/<slug>/, several with +", "buy or rent", "number, blank = POA",
              "blank for land", "", "optional", "optional, e.g. 210 m² · erf 496 m²", "suburb", "optional, e.g. House",
              "optional (blank = made from beds, type, area)", "optional, e.g. New listing, Under offer",
@@ -55,6 +71,43 @@ def sub_once(html, old, new):
     if html.count(old) != 1:
         sys.exit("Master card changed, could not find: " + old[:70])
     return html.replace(old, new)
+
+
+def social_links(v):
+    out = []
+    for part in split(v):
+        label, _, url = part.partition("|")
+        if label.strip() and url.strip():
+            out.append((label.strip(), url.strip()))
+    return out
+
+
+SMS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H9l-5 4V6a1 1 0 011-1z"/><path d="M8 10h8M8 13h5"/></svg>'
+
+
+def apply_social_style(html, socials):
+    # Own contact buttons go by Text (SMS) instead of WhatsApp: for an agent
+    # with no WhatsApp (common in the US) a wa.me link to them goes nowhere.
+    # Claim-this-card button to Chris is untouched, still WhatsApp.
+    html = sub_once(html,
+        '<a class="act wa" href="#" data-go="wa" data-t="whatsapp"><i><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.8 11.9 11.9 0 004.6 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 001.8-1.3 2.2 2.2 0 00.2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></i>WhatsApp</a>',
+        f'<a class="act wa" href="#" data-go="sms" data-t="sms"><i>{SMS_ICON}</i>Text</a>')
+    html = sub_once(html,
+        'if (g === "wa") wa(HI); else if (g === "call") location.href = "tel:" + C.tel;',
+        'if (g === "wa") wa(HI); else if (g === "sms") location.href = "sms:" + C.tel + "?&body=" + encodeURIComponent(HI); else if (g === "call") location.href = "tel:" + C.tel;')
+    html = sub_once(html,
+        '<a class="w" href="#" data-go="wa" data-t="whatsapp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2z"/></svg>Chat</a>',
+        f'<a class="w" href="#" data-go="sms" data-t="sms">{SMS_ICON}Text</a>')
+    html = sub_once(html, '<span id="fSendTxt">Send on WhatsApp</span>', '<span id="fSendTxt">Send by text</span>')
+    html = sub_once(html, '$("fSendTxt").textContent = m === "sell" ? "Get my free valuation" : "Send on WhatsApp";',
+                    '$("fSendTxt").textContent = m === "sell" ? "Get my free valuation" : "Send by text";')
+    html = sub_once(html, 'wa(msg); say("Sent to " + C.first);',
+                    'location.href = "sms:" + C.tel + "?&body=" + encodeURIComponent(msg); say("Sent to " + C.first);')
+    if socials:
+        chips = "".join(f'<a class="chip" href="{esc_attr(u)}" target="_blank" rel="noopener">{esc_attr(l)}</a>' for l, u in socials)
+        html = sub_once(html, '<div class="chips" id="chips"></div>\n    <div class="actions">',
+                        f'<div class="chips" id="chips"></div>\n    <div class="chips" id="socials">{chips}</div>\n    <div class="actions">')
+    return html
 
 
 def num(v):
@@ -126,6 +179,9 @@ def build(a, rows, photos, force=False):
     phone = re.sub(r"\D", "", str(a.get("whatsapp") or ""))
     if len(phone) < 9:
         sys.exit(f"{slug}: WhatsApp number needs the country code, e.g. 27834340515")
+    is_social = (a.get("style") or "").strip().lower() in SOCIAL_STYLES
+    socials = social_links(a.get("socials")) if is_social else []
+    contact_word = "Text" if is_social else "WhatsApp"
     role = (a.get("role") or "").strip() or f"{ROLE[ctry]} · {areas[0]}"
     words = [w for w in re.findall(r"[A-Za-z]+", agency) if w.lower() not in ("the", "and", "of", "properties", "property", "realty", "real", "estate", "pty", "ltd")]
     mark = (a.get("mark") or "").strip() or "".join(w[0] for w in words[:2]).upper() or agency[:1].upper()
@@ -207,11 +263,12 @@ def build(a, rows, photos, force=False):
         "whyEye": f"Working with {first}", "whyH": "Why sell with me",
         "why": [["A clear plan", "Price and timing set from real recent sales in your area, not a flattering guess."],
                 ["Honest answers", "Straight talk and regular updates from the first call to the final signature."],
-                ["Quick replies", f"Message {first} on WhatsApp straight from this card."],
+                ["Quick replies", f"{contact_word} {first} straight from this card." if is_social else f"Message {first} on WhatsApp straight from this card."],
                 ["Local knowledge", f"Working in {' and '.join(areas[:2])}, so you get advice for your street, not the whole city."]],
         "info": [["Office", agency + (", " + office if office else (", " + city if city else ""))], ["Viewings", "By appointment"]],
         "claimEye": f"Made for {first} by CEVYQ", "claimH": f"Like it, {first}?",
-        "claimP": f"This is a preview of your own digital card, built from your {agency} profile and listings. Every open and tap is counted, and enquiries come to you on WhatsApp. It can go live in a day.",
+        "claimP": (f"This is a preview of your own digital card, built from your {agency} profile and listings. Every open and tap is counted, "
+                   f"and enquiries come to you {'by text' if is_social else 'on WhatsApp'}. It can go live in a day."),
         "fine": (f"Preview made for {name} by CEVYQ Group. Listings and photos are from {(a.get('source') or 'your public listings').strip()}. "
                  f"This is not an official {agency} page. Privacy: opens and taps are counted without names. If you send an enquiry, "
                  f"your name and number go to {first} and are kept safely by CEVYQ Group so {first} can reply. To see or remove your details, "
@@ -221,7 +278,7 @@ def build(a, rows, photos, force=False):
         "claimWa": CLAIM_WA, "claimPrice": PRICE[ctry],
     })
 
-    desc = f"Homes to buy{' or rent' if n_rent else ''} in {', '.join(areas[:3])}. WhatsApp {first}."
+    desc = f"Homes to buy{' or rent' if n_rent else ''} in {', '.join(areas[:3])}. {contact_word} {first}."
     short_city = city.split(",")[0] or areas[0]
     html = html[:m.start()] + "var C = " + json.dumps(C, ensure_ascii=False) + ";" + html[m.end():]
     html = re.sub(r"<title>.*?</title>", f"<title>{esc_attr(name)} | {esc_attr(role.split(' · ')[0])}, {esc_attr(short_city)}</title>", html, count=1)
@@ -251,6 +308,8 @@ def build(a, rows, photos, force=False):
                                 f'data-name="{esc_attr(name)}, {esc_attr(agency)} (preview)" data-agency="" data-person="{esc_attr(name)}" data-agent="Chris" defer></script>', html)
     if k != 1:
         sys.exit("Master card changed, could not find the Card Desk tag")
+    if is_social:
+        html = apply_social_style(html, socials)
 
     if out.exists():
         shutil.rmtree(out)

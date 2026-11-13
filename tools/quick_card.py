@@ -21,7 +21,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 MASTER = REPO / "sa" / "index.html"
 COUNTRY_MASTER = {"SA": "sa", "US": "usa", "AU": "aus"}
-PRICE = {"SA": "R1,500", "US": "$75", "AU": "A$110"}
+PRICE = {"SA": "R1,500", "US": "$85", "AU": "A$110"}
 ROLE = {"SA": "Property Practitioner", "US": "Realtor", "AU": "Sales Agent"}
 MONEY_KEYS = ["cur", "sep", "rentPer", "rentPerWord", "loc", "tz", "tzName", "hours", "times",
               "moveIn", "moveInTxt", "calc", "types", "budgetBuy", "budgetRent", "telHint"]

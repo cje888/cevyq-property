@@ -133,7 +133,7 @@ def resize(src, dst, width):
     im.save(dst, "JPEG", quality=78, optimize=True, progressive=True)
 
 
-def build(a, rows, photos, force=False):
+def build(a, rows, photos, force=False, sample=False):
     slug = slugify(a.get("slug") or a["name"])
     out = REPO / slug
     if slug in ("sa", "usa", "aus", "malee", "erica", "dashboard", "tools"):
@@ -293,6 +293,14 @@ def build(a, rows, photos, force=False):
         sys.exit("Master card changed, could not find the Card Desk tag")
     if is_social:
         html = apply_social_style(html, socials)
+    if sample:
+        # Cold-outreach preview card: the agent has no listings on file yet, so the homes
+        # section shows placeholder listings, clearly marked, instead of nothing.
+        html = sub_once(html, '<div class="eyebrow">Featured homes</div>',
+            '<div class="eyebrow">Featured homes</div>'
+            '<div style="background:#fff3cd;border:1px solid #f0d58a;border-radius:8px;padding:8px 12px;'
+            'font-size:13px;margin:6px 0 10px;color:#6b5200">Sample listings shown below so you can see the layout. '
+            f'Your own current listings would replace these once your card is set up.</div>')
 
     if out.exists():
         shutil.rmtree(out)

@@ -19,6 +19,10 @@ Two templates:
   python3 tools/quick_card.py --blank agents.xlsx        make an empty sheet to fill in
   python3 tools/quick_card.py agents.xlsx photos/        build every agent in the sheet
   python3 tools/quick_card.py agents.xlsx photos/ --only erica --force
+  python3 tools/quick_card.py crm photos/ --only erica    build straight from the live Property CRM
+                                                           (dashboard.cevyq.com/crm/) instead of a sheet;
+                                                           asks for the dashboard passphrase, or pass
+                                                           --code or set CEVYQ_CODE
 
 Sheet: tab "Agents" (one row per agent) and tab "Listings" (one row per home).
 Photos: photos/<slug>/agent.jpg, optional hero.jpg, and the listing photos
@@ -27,11 +31,15 @@ named in the Listings tab. Output goes to <repo>/<slug>/ (index.html, agent.jpg,
 Nothing made up is carried over from Jessica: her reviews, sold homes, sales
 figures, ticker and licence numbers are all cleared. Only facts in the sheet show.
 """
-import json, re, sys, shutil, argparse
+import json, re, sys, shutil, argparse, os, getpass
 from pathlib import Path
+from urllib import request as urlrequest, error as urlerror
 
 REPO = Path(__file__).resolve().parent.parent
 MASTER = REPO / "sa" / "index.html"
+CRM_URL = "https://cevyq-stats.chris-e41.workers.dev"
+CRM_SOCIAL_COLS = [("facebook", "Facebook"), ("instagram", "Instagram"), ("linkedin", "LinkedIn"),
+                   ("tiktok", "TikTok"), ("youtube", "YouTube"), ("website", "Website")]
 COUNTRY_MASTER = {"SA": "sa", "US": "usa", "AU": "aus"}
 PRICE = {"SA": "R1,500", "US": "$85", "AU": "A$110"}
 ROLE = {"SA": "Property Practitioner", "US": "Realtor", "AU": "Sales Agent"}
@@ -325,6 +333,46 @@ def build(a, rows, photos, force=False):
     return slug
 
 
+def crm_call(path, body):
+    req = urlrequest.Request(CRM_URL + path, data=json.dumps(body).encode(), method="POST",
+                              headers={"Content-Type": "application/json"})
+    try:
+        with urlrequest.urlopen(req, timeout=20) as r:
+            return json.loads(r.read())
+    except urlerror.URLError as e:
+        sys.exit(f"Could not reach the CEVYQ CRM: {e}")
+
+
+def crm_agent_row(a):
+    # CRM stores one column per social link; the sheet instead has one "socials" field of
+    # Label|URL pairs, so build it here and switch the agent to the social/Text template
+    # automatically when there is nothing else to show it with.
+    row = dict(a)
+    row["profile link"] = row.pop("profile_link", "")
+    socials = [(label, row[key]) for key, label in CRM_SOCIAL_COLS if row.get(key)]
+    if socials:
+        row["socials"] = ", ".join(f"{label}|{url}" for label, url in socials)
+        row.setdefault("style", "social")
+    return row
+
+
+def crm_listing_row(r):
+    row = dict(r)
+    row["buy or rent"] = row.pop("kind", "")
+    return row
+
+
+def read_crm(code):
+    login = crm_call("/owner/login", {"c": "stats", "code": code})
+    token = login.get("token")
+    if not token:
+        sys.exit("CRM sign in failed: " + login.get("error", "wrong passphrase?"))
+    data = crm_call("/crm/manage/list", {"t": token})
+    if "agents" not in data:
+        sys.exit("CRM sign in failed: " + data.get("error", "unknown error"))
+    return [crm_agent_row(a) for a in data["agents"]], [crm_listing_row(r) for r in data["listings"]]
+
+
 def read_sheet(path):
     import openpyxl
     wb = openpyxl.load_workbook(path, data_only=True)
@@ -369,12 +417,17 @@ def main():
     ap.add_argument("--blank", action="store_true")
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--code", help="dashboard passphrase for 'crm' mode (prompted if not given; or set CEVYQ_CODE)")
     o = ap.parse_args()
     if o.blank:
         return blank(o.sheet)
     if not o.photos:
         sys.exit("Give the photos folder too")
-    agents, listings = read_sheet(o.sheet)
+    if o.sheet.lower() == "crm":
+        code = o.code or os.environ.get("CEVYQ_CODE") or getpass.getpass("CEVYQ dashboard passphrase: ")
+        agents, listings = read_crm(code)
+    else:
+        agents, listings = read_sheet(o.sheet)
     for a in agents:
         slug = slugify(a.get("slug") or a.get("name", ""))
         if o.only and slug not in o.only:

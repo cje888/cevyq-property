@@ -264,7 +264,7 @@ def build(a, rows, photos, force=False, sample=False):
     desc = f"Homes to buy{' or rent' if n_rent else ''} in {', '.join(areas[:3])}. {contact_word} {first}."
     short_city = city.split(",")[0] or areas[0]
     html = html[:m.start()] + "var C = " + json.dumps(C, ensure_ascii=False) + ";" + html[m.end():]
-    html = re.sub(r"<title>.*?</title>", f"<title>{esc_attr(name)} | {esc_attr(role.split(' · ')[0])}, {esc_attr(short_city)}</title>", html, count=1)
+    html = re.sub(r"<title>.*?</title>", lambda m: f"<title>{esc_attr(name)} | {esc_attr(role.split(' · ')[0])}, {esc_attr(short_city)}</title>", html, count=1)
     html = re.sub(r'(<meta name="description" content=")[^"]*', lambda x: x.group(1) + esc_attr(desc), html, count=1)
     html = re.sub(r'(<meta property="og:title" content=")[^"]*', lambda x: x.group(1) + esc_attr(f"{name} | {short_city} Property"), html, count=1)
     html = re.sub(r'(<meta property="og:description" content=")[^"]*', lambda x: x.group(1) + esc_attr(desc), html, count=1)

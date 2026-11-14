@@ -9,27 +9,21 @@ Two templates:
   social / cas            - same design, but the agent's own contact buttons,
                             lead form and dock send a Text (SMS) instead of
                             WhatsApp, and a row of social/site links shows
-                            under the bio. Use this when the agent has no
-                            WhatsApp (common in the US) or you have socials
-                            to show (from a Linktree page etc). Set "style"
-                            to cas or social in the Agents sheet, and put the
-                            links in "socials" as Label|URL pairs, comma
-                            separated, e.g. Facebook|https://fb.com/x, TikTok|https://tiktok.com/@x
+                            under the bio. Picked automatically when the CRM
+                            record has any of facebook/instagram/linkedin/
+                            tiktok/youtube/website filled in.
 
-  python3 tools/quick_card.py --blank agents.xlsx        make an empty sheet to fill in
-  python3 tools/quick_card.py agents.xlsx photos/        build every agent in the sheet
-  python3 tools/quick_card.py agents.xlsx photos/ --only erica --force
-  python3 tools/quick_card.py crm photos/ --only erica    build straight from the live Property CRM
-                                                           (dashboard.cevyq.com/crm/) instead of a sheet;
-                                                           asks for the dashboard passphrase, or pass
-                                                           --code or set CEVYQ_CODE
+  python3 tools/quick_card.py photos/                build every agent in the CRM
+  python3 tools/quick_card.py photos/ --only erica --force
 
-Sheet: tab "Agents" (one row per agent) and tab "Listings" (one row per home).
+Signs in to the live Property CRM (dashboard.cevyq.com/crm/) with the dashboard
+passphrase (asked for, or pass --code, or set CEVYQ_CODE) and builds every
+agent's listings from there.
 Photos: photos/<slug>/agent.jpg, optional hero.jpg, and the listing photos
-named in the Listings tab. Output goes to <repo>/<slug>/ (index.html, agent.jpg, img/).
+named for each listing. Output goes to <repo>/<slug>/ (index.html, agent.jpg, img/).
 
 Nothing made up is carried over from Jessica: her reviews, sold homes, sales
-figures, ticker and licence numbers are all cleared. Only facts in the sheet show.
+figures, ticker and licence numbers are all cleared. Only facts in the CRM show.
 """
 import json, re, sys, shutil, argparse, os, getpass
 from pathlib import Path
@@ -48,25 +42,6 @@ MONEY_KEYS = ["cur", "sep", "rentPer", "rentPerWord", "loc", "tz", "tzName", "ho
               "moveIn", "moveInTxt", "calc", "types", "budgetBuy", "budgetRent", "telHint"]
 CLAIM_WA = "https://wa.me/66631101888?text=Hi%20Chris%2C%20I%20saw%20the%20card%20you%20made%20for%20me.%20Let%20us%20talk."
 CLAIM_MAIL = "mailto:chris@cevyq.com?subject=My%20CEVYQ%20card&body=Hi%20Chris%2C%20I%20saw%20the%20card%20you%20made%20for%20me.%20Let%20us%20talk.%20My%20name%20is%20"
-
-AGENT_COLS = ["slug", "name", "agency", "country", "whatsapp", "email", "city", "office",
-              "areas", "role", "intro", "profile link", "badge", "licence", "chips", "mark", "source",
-              "style", "socials"]
-LIST_COLS = ["slug", "photos", "buy or rent", "price", "beds", "baths", "garages", "size",
-             "area", "type", "title", "flag", "features", "description", "link"]
-AGENT_HELP = ["link name, lower case (blank = from name)", "Erica van Eden", "Pam Golding Properties",
-              "SA, US or AU (blank = SA)", "with country code, e.g. 27834340515", "optional", "Hout Bay, Cape Town",
-              "optional, e.g. Hout Bay office", "comma list, e.g. Hout Bay, Scott Estate", "optional (blank = country default)",
-              "optional one or two lines", "agent page on agency site, optional", "optional, only if true, e.g. GoldClub Agent",
-              "optional, only if true, e.g. PPRA full status FFC", "optional comma list, e.g. English, Afrikaans",
-              "optional logo letters (blank = agency initials)", "optional, where photos came from, e.g. pamgolding.co.za",
-              "blank = standard (Jessica, WhatsApp), or cas (Text/SMS + socials row)",
-              "only for style cas, Label|URL pairs, comma separated, e.g. Facebook|https://fb.com/x"]
-LIST_HELP = ["same slug as Agents", "file names in photos/<slug>/, several with +", "buy or rent", "number, blank = POA",
-             "blank for land", "", "optional", "optional, e.g. 210 m² · erf 496 m²", "suburb", "optional, e.g. House",
-             "optional (blank = made from beds, type, area)", "optional, e.g. New listing, Under offer",
-             "optional, split with ;", "optional", "listing page, optional"]
-
 
 def read_C(html):
     m = re.search(r"^var C = (\{.*\});\s*$", html, re.M)
@@ -344,9 +319,9 @@ def crm_call(path, body):
 
 
 def crm_agent_row(a):
-    # CRM stores one column per social link; the sheet instead has one "socials" field of
+    # CRM stores one column per social link; build() instead wants one "socials" field of
     # Label|URL pairs, so build it here and switch the agent to the social/Text template
-    # automatically when there is nothing else to show it with.
+    # automatically when there is one to show.
     row = dict(a)
     row["profile link"] = row.pop("profile_link", "")
     socials = [(label, row[key]) for key, label in CRM_SOCIAL_COLS if row.get(key)]
@@ -373,61 +348,15 @@ def read_crm(code):
     return [crm_agent_row(a) for a in data["agents"]], [crm_listing_row(r) for r in data["listings"]]
 
 
-def read_sheet(path):
-    import openpyxl
-    wb = openpyxl.load_workbook(path, data_only=True)
-
-    def rows(tab):
-        ws = wb[tab]
-        it = ws.iter_rows(values_only=True)
-        head = [str(h or "").strip().lower() for h in next(it)]
-        out = []
-        for r in it:
-            d = {head[i]: ("" if v is None else str(v).strip() if not isinstance(v, (int, float)) else v) for i, v in enumerate(r) if i < len(head) and head[i]}
-            if any(str(v).strip() for v in d.values()) and not str(d.get("slug", "")).startswith("("):
-                out.append(d)
-        return out
-    return rows("Master" if "Master" in wb.sheetnames else "Agents"), rows("Listings")
-
-
-def blank(path):
-    import openpyxl
-    from openpyxl.styles import Font, PatternFill
-    wb = openpyxl.Workbook()
-    for i, (tab, cols, helps) in enumerate([("Agents", AGENT_COLS, AGENT_HELP), ("Listings", LIST_COLS, LIST_HELP)]):
-        ws = wb.active if i == 0 else wb.create_sheet()
-        ws.title = tab
-        ws.append(cols)
-        ws.append(["(" + h + ")" if h else "" for h in helps])
-        for c in ws[1]:
-            c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="0D3B46")
-        for c in ws[2]:
-            c.font = Font(italic=True, color="888888")
-        for col in ws.columns:
-            ws.column_dimensions[col[0].column_letter].width = 22
-        ws.freeze_panes = "A2"
-    wb.save(path)
-    print("Blank sheet saved:", path)
-
-
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("sheet")
-    ap.add_argument("photos", nargs="?")
-    ap.add_argument("--blank", action="store_true")
+    ap.add_argument("photos")
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--force", action="store_true")
-    ap.add_argument("--code", help="dashboard passphrase for 'crm' mode (prompted if not given; or set CEVYQ_CODE)")
+    ap.add_argument("--code", help="dashboard passphrase (prompted if not given; or set CEVYQ_CODE)")
     o = ap.parse_args()
-    if o.blank:
-        return blank(o.sheet)
-    if not o.photos:
-        sys.exit("Give the photos folder too")
-    if o.sheet.lower() == "crm":
-        code = o.code or os.environ.get("CEVYQ_CODE") or getpass.getpass("CEVYQ dashboard passphrase: ")
-        agents, listings = read_crm(code)
-    else:
-        agents, listings = read_sheet(o.sheet)
+    code = o.code or os.environ.get("CEVYQ_CODE") or getpass.getpass("CEVYQ dashboard passphrase: ")
+    agents, listings = read_crm(code)
     for a in agents:
         slug = slugify(a.get("slug") or a.get("name", ""))
         if o.only and slug not in o.only:
